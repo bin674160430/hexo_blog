@@ -197,7 +197,7 @@ z 轴上的默认层叠顺序如下（从下到上）：
 
 # 如何水平居中一个元素
 
-- 如果需要居中的元素为**常规流中 inline 元素**，为父元素设置`text-align: center;`即可实现
+- 如果需要居中的元素为**常规流中 inline 元素**，为父元素设置`text-align: center;`
 - 如果需要居中的元素为**常规流中 block 元素**，1）为元素设置宽度，2）设置左右 margin 为 auto。3）IE6 下需在父元素上设置`text-align: center;`,再给子元素恢复需要的值
 
 ```html
@@ -248,3 +248,103 @@ z 轴上的默认层叠顺序如下（从下到上）：
 </style>
 ```
 
+- 如果需要居中的元素为**绝对定位元素**，1）为元素设置宽度，2）偏移量设置为 50%，3）偏移方向外边距设置为元素宽度一半乘以-1
+
+```html
+<body>
+    <div class="content">
+    aaaaaa aaaaaa a a a a a a a a
+    </div>
+</body>
+
+<style>
+    body {
+        background: #DDD;
+        position: relative;
+    }
+    .content {
+        width: 800px;
+
+        position: absolute;
+        left: 50%;
+        margin-left: -400px;
+
+        background-color: purple;
+    }
+</style>
+```
+
+- 如果需要居中的元素为**绝对定位元素**，1）为元素设置宽度，2）设置左右偏移量都为 0,3）设置左右外边距都为 auto
+
+```html
+<body>
+    <div class="content">
+    aaaaaa aaaaaa a a a a a a a a
+    </div>
+</body>
+
+<style>
+    body {
+        background: #DDD;
+        position: relative;
+    }
+    .content {
+        width: 800px;
+
+        position: absolute;
+        margin: 0 auto;
+        left: 0;
+        right: 0;
+
+        background-color: purple;
+    }
+</style>
+```
+
+# 如何竖直居中一个元素
+
+- 绝对定位居中 `absolute`跳出内容流，其余部分渲染时绝对定位部分不进行渲染, `margin:auto` 的效果等同于 `margin-top:0; margin-bottom:0`，`top:0;left:0;bottom:0;right:0`将给浏览器重新分配一个边界框，该块`block`将填充其父元素的所有空间，父元素一般为`body`或者声明为`position:relative`的内容，给内容块设置一个高度`height`或宽度`width`，能够防止内容块占据所有的可用空间，促使浏览器根据新的边界框重新计算`margin:auto`
+
+```css
+/*
+优点：
+    1.支持跨浏览器，包括IE8-IE10.
+    2.无需其他特殊标记，CSS代码量少
+    3.支持百分比%属性值和min-/max-属性
+    4.只用这一个类可实现任何内容块居中
+    5.不论是否设置padding都可居中（在不使用box-sizing属性的前提下）
+    6.内容块可以被重绘。
+    7.完美支持图片居中。
+
+缺点：
+    1.必须声明高度（查看可变高度Variable Height）。
+    2.建议设置overflow:auto来防止内容越界溢出。（查看溢出Overflow）。
+    3.在Windows Phone设备上不起作用。
+*/
+.Absolute-Center {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+```
+
+- 内容块的父容器设置为`position: relative`，可以使内容居中显示于父容器
+
+```css
+.Center-Container {
+  position: relative;
+  width: 800px;
+  height: 800px;
+}
+ 
+.Absolute-Center {
+  width: 50%;
+  height: 50%;
+  overflow: auto;
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+```
+
+将内容块设置为 `position: fixed`， 并设置一个较大的 `z-index`层级，让内容块一直停留在可视区内，不受页面滚动影响
