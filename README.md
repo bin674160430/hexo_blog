@@ -1,7 +1,13 @@
-搭载了hexo基础环境以及mellow主题的纯净仓库。
+# hexo 博客
 
-clone之后进入目录并运行 `npm install`。
+安装hexo-cli
+```
+npm install -g hexo-cli
+yarn global add hexo-cli
+```
 
-在线预览地址[https://codefine.github.io/](https://codefine.github.io/)。
 
-请尽情使用，觉得不错就来个star吧 ^_^。
+```
+hexo g        #完整命令为hexo generate，生成静态文件
+hexo s        #完整命令为hexo server，启动服务器，用来本地预览
+```
