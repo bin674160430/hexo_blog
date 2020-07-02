@@ -30,7 +30,6 @@ tags:
     <!-- 淘宝提供的适配方式js -->
 </head>
 <body>
-    
 </body>
 </html>
 {% endcodeblock %}

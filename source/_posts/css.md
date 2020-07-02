@@ -43,7 +43,7 @@ tags:
 
 
 
-# css sprite 是什么,有什么优缺点?
+# css sprite 是什么,优缺点?
 
 将多个小图片拼接到一个图片中。通过 background-position 和元素尺寸调节需要显示的背景图案。
 
@@ -58,18 +58,18 @@ tags:
 1. 图片合并麻烦
 2. 维护麻烦，修改一个图片可能需要重新布局整个图片，样式
 
-# `display: none;`与`visibility: hidden;`的区别
+# *display: none;*与*visibility: hidden;*
 
 联系：它们都能让元素不可见
 
 区别：
 
-1. display:none;会让元素完全从渲染树中消失，渲染的时候不占据任何空间；visibility: hidden;不会让元素从渲染树消失，渲染时元素继续占据空间，只是内容不可见。
-2. display: none;是非继承属性，子孙节点消失由于元素从渲染树消失造成，通过修改子孙节点属性无法显示；visibility: hidden;是继承属性，子孙节点由于继承了 hidden 而消失，通过设置 visibility: visible，可以让子孙节点显示。
-3. 修改常规流中元素的 display 通常会造成文档重排。修改 visibility 属性只会造成本元素的重绘。
-4. 读屏器不会读取 display: none;元素内容；会读取 visibility: hidden;元素内容。
+1. `display:none;`会让元素完全从渲染树中消失，渲染的时候不占据任何空间；`visibility: hidden;`不会让元素从渲染树消失，渲染时元素继续占据空间，只是内容不可见。
+2. `display: none;`是非继承属性，子孙节点消失由于元素从渲染树消失造成，通过修改子孙节点属性无法显示；`visibility: hidden;`是继承属性，子孙节点由于继承了 `hidden` 而消失，通过设置 `visibility: visible`，可以让子孙节点显示。
+3. 修改常规流中元素的 `display` 通常会造成文档重排。修改 `visibility` 属性只会造成本元素的重绘。
+4. 读屏器不会读取 `display: none;`元素内容；会读取 `visibility: hidden;`元素内容。
 
-# `display: block;`和`display: inline;`的区别
+# *display: block;*和*display: inline;*
 
 `block`元素特点：
 
@@ -103,19 +103,19 @@ tags:
 
 # specified value,computed value,used value 计算方法
 
-- specified value: 计算方法如下：
+- `specified value:` 计算方法如下：
   1. 如果样式表设置了一个值，使用这个值
   2. 如果没有设值，且这个属性是继承属性，从父元素继承
   3. 如果没有设值，并且不是继承属性，则使用 css 规范指定的初始值
-- computed value: 以 specified value 根据规范定义的行为进行计算，通常将相对值计算为绝对值，例如 em 根据 font-size 进行计算。一些使用百分数并且需要布局来决定最终值的属性，如 width，margin。百分数就直接作为 computed value。line-height 的无单位值也直接作为 computed value。这些值将在计算 used value 时得到绝对值。**computed value 的主要作用是用于继承**
-- used value：属性计算后的最终值，对于大多数属性可以通过 window.getComputedStyle 获得，尺寸值单位为像素。以下属性依赖于布局，
-  - background-position
-  - bottom, left, right, top
-  - height, width
-  - margin-bottom, margin-left, margin-right, margin-top
-  - min-height, min-width
-  - padding-bottom, padding-left, padding-right, padding-top
-  - text-indent
+- `computed value`: 以 `specified value` 根据规范定义的行为进行计算，通常将相对值计算为绝对值，例如 `em` 根据 `font-size` 进行计算。一些使用百分数并且需要布局来决定最终值的属性，如 `width`，`margin`。百分数就直接作为 computed value。line-height 的无单位值也直接作为 `computed value`。这些值将在计算 used value 时得到绝对值。**computed value 的主要作用是用于继承**
+- `used value`：属性计算后的最终值，对于大多数属性可以通过 window.getComputedStyle 获得，尺寸值单位为像素。以下属性依赖于布局，
+  - `background-position`
+  - `bottom, left, right, top`
+  - `height, width`
+  - `margin-bottom, margin-left, margin-right, margin-top`
+  - `min-height, min-width`
+  - `padding-bottom, padding-left, padding-right, padding-top`
+  - `text-indent`
 
 # 容器包含若干浮动元素时如何清理(包含)浮动
 
@@ -197,45 +197,64 @@ z 轴上的默认层叠顺序如下（从下到上）：
 
 # 如何水平居中一个元素
 
-- 如果需要居中的元素为**常规流中 inline 元素**，为父元素设置`text-align: center;`
-- 如果需要居中的元素为**常规流中 block 元素**，1）为元素设置宽度，2）设置左右 margin 为 auto。3）IE6 下需在父元素上设置`text-align: center;`,再给子元素恢复需要的值
+- ###### 居中的元素为**inline 元素**，为父元素设置`text-align: center;`
+
+  ------
+
+  
+
+- 居中的元素为**block 元素**
+  1）为元素设置宽度
+  2）设置左右 margin 为 auto
+  3）IE6 下需在父元素上设置`text-align: center;`
+
+{% image horizontal.jpg 示例图 %}
 
 ```html
 <body>
+    body
+    <h1>水平居中</h1>
     <div class="content">
-    aaaaaa aaaaaa a a a a a a a a
+        content
     </div>
 </body>
 
 <style>
     body {
-        background: #DDD;
         text-align: center; /* 3 */
     }
     .content {
         width: 500px;      /* 1 */
         text-align: left;  /* 3 */
         margin: 0 auto;    /* 2 */
-
+        color: white;
+        padding: 30px 15px;
         background: purple;
     }
 </style>
 ```
 
-- 如果需要居中的元素为**浮动元素**，1）为元素设置宽度，2）`position: relative;`，3）浮动方向偏移量（left 或者 right）设置为 50%，4）浮动方向上的 margin 设置为元素宽度一半乘以-1
+------
+
+
+
+- 如果需要居中的元素为**浮动元素**
+  1）为元素设置宽度
+  2）`position: relative;`
+  3）浮动方向偏移量（left 或者 right）设置为 50%
+  4）浮动方向上的 margin 设置为元素宽度一半乘以-1
+
+  {% image horizontal-1.png 示例图 %}
 
 ```html
 <body>
-    <div class="content">
-    aaaaaa aaaaaa a a a a a a a a
+    <div class="content1">
+    	aaaaaa aaaaaa a a a a a a a a
     </div>
 </body>
 
 <style>
-    body {
-        background: #DDD;
-    }
-    .content {
+    .content1 {
         width: 500px;         /* 1 */
         float: left;
 
@@ -248,54 +267,68 @@ z 轴上的默认层叠顺序如下（从下到上）：
 </style>
 ```
 
-- 如果需要居中的元素为**绝对定位元素**，1）为元素设置宽度，2）偏移量设置为 50%，3）偏移方向外边距设置为元素宽度一半乘以-1
+------
+
+
+
+- 如果需要居中的元素为**绝对定位元素**
+  1）为元素设置宽度
+  2）偏移量设置为 50%
+  3）偏移方向外边距设置为元素宽度一半乘以-1
+
+{% image horizontal-2.png 示例图 %}
 
 ```html
 <body>
-    <div class="content">
+    <div class="content2">
     aaaaaa aaaaaa a a a a a a a a
     </div>
 </body>
 
 <style>
     body {
-        background: #DDD;
         position: relative;
     }
-    .content {
+    .content2 {
         width: 800px;
-
         position: absolute;
         left: 50%;
         margin-left: -400px;
-
         background-color: purple;
+        color: white;
+        padding: 30px 15px;
     }
 </style>
 ```
 
-- 如果需要居中的元素为**绝对定位元素**，1）为元素设置宽度，2）设置左右偏移量都为 0,3）设置左右外边距都为 auto
+------
+
+
+
+- 如果需要居中的元素为**绝对定位元素**
+  1）为元素设置宽度
+  2）设置左右偏移量都为 0
+  3）设置左右外边距都为 auto
+
+{% image horizontal-3.png 示例图 %}
 
 ```html
 <body>
-    <div class="content">
+    <div class="content3">
     aaaaaa aaaaaa a a a a a a a a
     </div>
 </body>
 
 <style>
     body {
-        background: #DDD;
         position: relative;
     }
-    .content {
+    .content3 {
         width: 800px;
-
         position: absolute;
         margin: 0 auto;
         left: 0;
         right: 0;
-
         background-color: purple;
     }
 </style>
@@ -303,7 +336,11 @@ z 轴上的默认层叠顺序如下（从下到上）：
 
 # 如何竖直居中一个元素
 
-- 绝对定位居中 `absolute`跳出内容流，其余部分渲染时绝对定位部分不进行渲染, `margin:auto` 的效果等同于 `margin-top:0; margin-bottom:0`，`top:0;left:0;bottom:0;right:0`将给浏览器重新分配一个边界框，该块`block`将填充其父元素的所有空间，父元素一般为`body`或者声明为`position:relative`的内容，给内容块设置一个高度`height`或宽度`width`，能够防止内容块占据所有的可用空间，促使浏览器根据新的边界框重新计算`margin:auto`
+- 绝对定位居中 `absolute`跳出内容流，其余部分渲染时绝对定位部分不进行渲染
+- `margin:auto` 的效果等同于 `margin-top:0; margin-bottom:0``
+- ``top:0;left:0;bottom:0;right:0`将给浏览器重新分配一个边界框，该块`block`将填充其父元素的所有空间
+- 父元素一般为`body`或者声明为`position:relative`的内容，给内容块设置一个高度`height`或宽度`width`，能够防止内容块占据所有的可用空间，促使浏览器根据新的边界框重新计算`margin:auto`
+- 唯一支持`resize: both`允许用户拉伸元素大小尺寸(手机浏览器和IE8-IE10浏览器不支持resize属性)
 
 ```css
 /*
@@ -348,3 +385,11 @@ z 轴上的默认层叠顺序如下（从下到上）：
 ```
 
 将内容块设置为 `position: fixed`， 并设置一个较大的 `z-index`层级，让内容块一直停留在可视区内，不受页面滚动影响
+
+```css
+.Absolute-Center {
+    position: fixed;
+    z-index: 999;
+}
+```
+

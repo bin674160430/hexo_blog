@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>css</title>
+</head>
+<style>
+    body {
+        text-align: center;
+        position: relative;
+    }
+    [class^=content] {
+        color: white;
+        padding: 30px 15px;
+    }
+    .content {
+        width: 500px;
+        text-align: left;
+        margin: 0 auto;
+        background-color: purple;
+        color: white;
+        padding: 30px 15px;
+    }
+    .content1 {
+        width: 500px;
+        position: relative;
+        float: left;
+        left: 50%;
+        margin-left: -250px;
+        background-color: purple;
+        color: white;
+        padding: 30px 15px;
+    }
+    .content2 {
+        width: 800px;
+        position: absolute;
+        left: 50%;
+        margin-left: -400px;
+        background-color: purple;
+    }
+    .content3 {
+        width: 800px;
+        position: absolute;
+        margin: 0 auto;
+        left: 0;
+        right: 0;
+        background-color: purple;
+    }
+</style>
+<body>
+    body
+    <h1>水平居中</h1>
+    <section>
+        <h3>inline 元素</h3>
+        <div style="text-align: center;">
+            <p style="display: inline;">inline p</p>
+        </div>
+    </section>
+    <div class="content">
+        content
+    </div>
+    <div class="content1">
+        aaaaaa aaaaaa a a a a a a a a
+    </div>
+    <div class="content2">
+        aaaaaa aaaaaa a a a a a a a a
+    </div>
+    <div class="content3">
+        aaaaaa aaaaaa a a a a a a a a
+    </div>
+    <section>
+
+    </section>
+</body>
+</html>
