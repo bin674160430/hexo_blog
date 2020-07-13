@@ -367,6 +367,8 @@ z 轴上的默认层叠顺序如下（从下到上）：
 
 - 内容块的父容器设置为`position: relative`，可以使内容居中显示于父容器
 
+{% image vertical.png 示例图 %}
+
 ```css
 .Center-Container {
   position: relative;

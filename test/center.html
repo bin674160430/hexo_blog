@@ -47,11 +47,29 @@
         right: 0;
         background-color: purple;
     }
+    .Center-Container {
+        background-color: gray;
+        position: relative;
+        width: 400px;
+        height: 400px;
+    }
+    .Absolute-Center {
+        background-color: hotpink;
+        width: 50%;
+        height: 50%;
+        overflow: auto;
+        margin: auto;
+        position: absolute;
+        top: 0; left: 0; bottom: 0; right: 0;
+    }
+    .Is-Fixed {
+        position: fixed;
+        z-index: 999;
+    }
 </style>
 <body>
     body
-    <h1>水平居中</h1>
-    <section>
+    <!-- <section>
         <h3>inline 元素</h3>
         <div style="text-align: center;">
             <p style="display: inline;">inline p</p>
@@ -68,9 +86,25 @@
     </div>
     <div class="content3">
         aaaaaa aaaaaa a a a a a a a a
+    </div> -->
+    <div class="Center-Container">
+        Center-Container
+        <div class="Absolute-Center Is-Fixed">
+            Absolute-Center
+        </div>
     </div>
-    <section>
-
-    </section>
 </body>
+<script>
+    var scope = "global scope";
+    function checkscope(){
+        var scope = "local scope";
+        function f(){
+            return scope;
+        }
+        return f;
+    }
+
+    var foo = checkscope(); 
+    foo();
+</script>
 </html>
