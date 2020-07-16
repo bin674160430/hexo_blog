@@ -1,0 +1,30 @@
+<!--
+ * @Desc: 
+ * @Autor<©>: maxuebin
+ * @Date: 2020-07-16 14:51:55
+ * @LastEditors: maxuebin
+ * @LastEditTime: 2020-07-16 15:13:19
+ * @FilePath: \hexo_blog\test\兼容.html
+--> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动兼容</title>
+    <style>
+        .test-active {
+            color: #000;
+        }
+        .test-active:active {
+            color: palevioletred;
+        }
+        /* input::-ms-clear{display:none;} */
+    </style>
+</head>
+<body>
+    <p>:active 伪类生效</p>
+    <a class="test-active" href="#">test-active</a>
+    <input type="text">
+</body>
+</html>

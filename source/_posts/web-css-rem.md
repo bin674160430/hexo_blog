@@ -5,7 +5,6 @@ categories:
     - 前端
 tags:
     - css
-    - 适配
 ---
 
 # 移动端css-rem使用

@@ -2,10 +2,9 @@
 title: css 
 date: 2020-06-30 11:17:10
 categories:
-    - 前端面试
+    - 前端
 tags:
     - css
-    - 面试
 ---
 
 # CSS 选择器有哪些
