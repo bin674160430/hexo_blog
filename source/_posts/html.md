@@ -2,10 +2,9 @@
 title: html 
 date: 2020-06-30 09:57:00
 categories:
-    - 前端面试
+    - 页面
 tags:
     - html
-    - 面试
 ---
 
 # <img\> 的 *title* 和 *alt* 有什么区别？

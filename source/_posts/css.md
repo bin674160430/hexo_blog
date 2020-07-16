@@ -2,7 +2,7 @@
 title: css 
 date: 2020-06-30 11:17:10
 categories:
-    - 前端
+    - 样式
 tags:
     - css
 ---
