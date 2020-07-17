@@ -122,9 +122,9 @@ top_icon: true
 # 页面标题
 ## 标签页 / 分类页 / 归档页的标题只能在这里设置
 ## 其他自定义页面标题在页面markdown文件的title中设置
-tags_title: Tags              #标签页
-categories_title: Categories  #分类页
-archives_title: Archives      #归档页
+tags_title: 标签              #标签页
+categories_title: 分类        #分类页
+archives_title:  归档         #归档页
 
 # 主页文章摘要缩略图
 defaultthumb: false #https://i.loli.net/2017/12/12/5a2fd18a74471.jpg
@@ -225,8 +225,8 @@ valine:
   enable: false
   appid: # appid
   appkey: # appkey
-  notify: false  #是否开启邮箱提醒
-  verify: false  #是否开启验证码
+  notify: true  #是否开启邮箱提醒
+  verify: true  #是否开启验证码
   placeholder: give me some sugers plz... #留言板中的预留信息
   avatar: 'wavatar'  #用户头像
 

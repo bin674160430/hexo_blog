@@ -140,3 +140,8 @@ instance1.colors.push("3"); // ["red", "blue", "green", "3"]
 这个例子的高效率体现在它只调用了一次`SuperType` 构造函数，并且因此避免了在`SubType.prototype` 上创建不必要的、多余的属性。于此同时，原型链还能保持不变；因此，还能够正常使用`instanceof` 和`isPrototypeOf()`
 
 **这是最成熟的方法，也是现在库实现的方法**
+
+# sessionStorage, localStorage, cookie区别
+
+1. `cookie` 一般由服务器生成，在设置的有效期内生效；浏览器不能保存超过300个cookie，单个服务器不能超过20个，每个cookie不能超过4k；会在请求时发送到服务器，作为会话标识
+2. `sessionStorage`在窗口关闭前有效，`localStorage`长期有效，大小不能超过5M
