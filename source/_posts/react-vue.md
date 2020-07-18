@@ -1,5 +1,5 @@
 ---
-title: React 和 Vue 的区别
+title: React 和 Vue 
 date: 2020-07-16 20:20:00
 categories:
     - 框架
@@ -7,6 +7,85 @@ tags:
     - React
     - Vue
 ---
+
+# [React / Vue 项目时为什么要在列表中写key，其作用是什么？](https://github.com/Advanced-Frontend/Daily-Interview-Question/issues/1)
+
+`vue`和`react`都是采用diff算法来对比新旧虚拟节点，从而更新节点，在交叉对比中，当新节点跟旧节点`头尾交叉对比`没有结果时，会根据新节点的`key`去对比旧节点数组中的`key`，从而找到相应旧节点（这里对应的是一个`key => index` 的`map`映射），如果没找到就认为是一个新增节点；而如果没有`key`，那么就采用遍历查找的方式去找对应的旧节点，一种一个`map`的映射，另一种是遍历查找，相比来说，`map`映射的速度更快。
+
+```javascript
+<div id="app">
+    <div v-for="i in dataList">{{ i }}</div>
+</div>
+
+var vm = new Vue({
+    el: '#app',
+    data() {
+        return {
+            dataList: [1,2,3,4,5]
+        }
+    }
+})
+// v-for生成dom节点数组
+[
+    '<div>1</div>', // id： A
+    '<div>2</div>', // id:  B
+    '<div>3</div>', // id:  C
+    '<div>4</div>', // id:  D
+    '<div>5</div>'  // id:  E
+]
+
+// 改变dataList数据，进行数据替换，对比改变后的数据
+ vm.dataList = [4, 1, 3, 5, 2] // 数据位置替换
+// 没有key的情况， 节点位置不变，但是节点innerText内容更新了
+ [
+     '<div>4</div>', // id： A
+     '<div>1</div>', // id:  B
+     '<div>3</div>', // id:  C
+     '<div>5</div>', // id:  D
+     '<div>2</div>'  // id:  E
+ ]
+
+// 有key的情况，dom节点位置进行了交换，但是内容没有更新
+// <div v-for="i in dataList" :key='i'>{{ i }}</div>
+ [
+     '<div>4</div>', // id： D
+     '<div>1</div>', // id:  A
+     '<div>3</div>', // id:  C
+     '<div>5</div>', // id:  E
+     '<div>2</div>'  // id:  B
+ ]
+
+// 增删dataList列表项
+vm.dataList = [3, 4, 5, 6, 7] // 数据进行增删
+
+// 1. 没有key的情况， 节点位置不变，内容也更新了
+[
+    '<div>3</div>', // id： A
+    '<div>4</div>', // id:  B
+    '<div>5</div>', // id:  C
+    '<div>6</div>', // id:  D
+    '<div>7</div>'  // id:  E
+]
+
+// 2. 有key的情况， 节点删除了 A, B 节点，新增了 F, G 节点
+// <div v-for="i in dataList" :key='i'>{{ i }}</div>
+[
+    '<div>3</div>', // id： C
+    '<div>4</div>', // id:  D
+    '<div>5</div>', // id:  E
+    '<div>6</div>', // id:  F
+    '<div>7</div>'  // id:  G
+]
+```
+
+综上所述，不带`key`，并且使用简单的模板（例如`dom`下只有`text`），基于这个前提下，可以更有效地复用节点，diff速度并不是不带`key`会比较快，因为带`key`在增删节点上耗时，没有`key`的情况下可以对节点就地复用，提高性能，但可能不会产生过渡效果，或者在某些节点有绑定数据出现状态错位
+
+## key的作用
+
+`key`是给每一个`vnode`的唯一`id`，依靠`key`，更准确更快的拿到`oldVnode`中对应得`vnode`节点
+
+- 精确，因为带key，在sameNode函数 a.key === b.key对比中可以避免就地复用的情况
+- 利用`key`的唯一性生成`map`对象来获取对应节点，比遍历方式更快
 
 # 监听数据变化的实现原理不同
 
