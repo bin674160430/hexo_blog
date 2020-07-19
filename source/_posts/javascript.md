@@ -145,3 +145,7 @@ instance1.colors.push("3"); // ["red", "blue", "green", "3"]
 
 1. `cookie` 一般由服务器生成，在设置的有效期内生效；浏览器不能保存超过300个cookie，单个服务器不能超过20个，每个cookie不能超过4k；会在请求时发送到服务器，作为会话标识
 2. `sessionStorage`在窗口关闭前有效，`localStorage`长期有效，大小不能超过5M
+
+# ajax的原理
+
+# api如何验证合法性

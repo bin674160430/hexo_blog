@@ -130,3 +130,22 @@ vm.dataList = [3, 4, 5, 6, 7] // 数据进行增删
 `Vuex` `$store`直接注入到了组件实例中，实用`dispatch`、`commit`提交更新，通过`mapState`或者直接通过`this.$store`来读取数据，`Vuex`直接修改`state`，实现原理和`Vue`一样，通过`getter`/`setter`来比较
 
 `Redux`中，每一个组件都需要用`connect`把需要的`props`和`dispatch`连接起来，每次修改数据用`dispatch`，不能直接调用`reducer`进行修改，且都是用新`state`替换旧的`state`，通过`diff`比较差异
+
+# Virtual DOM 真的比操作原生DOM快吗？
+
+> `Virtual DOM render` + `diff` 显然比渲染html字符串要慢，但是，它是在存`js`层面计算的，比起`DOM`操作，要高效很多，不管数据变化多少，每次重绘的性能都能接受，如果只是重置`innerHTML`，差别不大，真正的问题在于全新重新渲染的思维模式，即使只有一行数据变了，也需要重置整个`innerHTML`
+
+前端框架的意义在于掩盖底层`DOM`的操作，可以更声明式的方式来描述目的，从而使代码可读性更强，更容易维护，没有任何框架可以比纯手动的优化`DOM`操作更快，框架更多的是保证不需要手动优化的情况下，提供过得去的性能。
+
+`React`从来没有说过`React`比`原生操作DOM`快，`React`的基本思维模式是每次有变动就整个重新渲染整个应用，如果没有`Virtual DOM`，简单来说就是直接重置`innerHTML`，但是在一个大型列表所有数据都变了的情况下，重置`innerHTML`其实是一个还算合理的操作，真正的问题在于全部重新渲染的思维模式下，即使只有一行数据变了，也需要重置整个`innerHTML`，这样显然就有大量的浪费
+
+比较一下`innerHTML` vs `Virtual DOM`的重绘性能消耗：
+
+- `innerHTML`: render html string O(template size) + 重新创建所有DOM元素O(DOM size)
+- `Virtual DOM`: render Virtual DOM + diff O(template size) + 必要的DOM更新O(DOM change)
+
+# MVVM 与 Virtual DOM
+
+相比React，MVVM系框架如Vue都是采用数据绑定，通过观察数据变化并保留对实际DOM元素的应用，当有数据变化时进行对应的操作，MVVM的变化检查数据层面的，而React的检查DOM结构层面的；
+
+MVVM渲染列表的时候，由于每一行都有自己的数据作用域，所以通常都是每一行有一个对应的ViewModel实例，MVVM列表渲染的初始化几乎一定比React慢，创建ViewModel / scope 实例比起 Virtual DOM来说昂贵得多，MVVM实现的一个共同问题就是在列表渲染的数据源变动时，如何有效地复用已经创建的ViewModel实例和DOM元素
