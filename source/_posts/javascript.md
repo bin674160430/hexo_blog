@@ -148,4 +148,30 @@ instance1.colors.push("3"); // ["red", "blue", "green", "3"]
 
 # ajax的原理
 
+Asynchronous JavaScript and XML (异步的JavaScript 和 XML)，与服务器端交换数据并更新网页，IE(5-6)浏览器使用 ActiveXObject , 其他浏览器使用 XMLHttpRequest 的 JavaScript内置对象
+
+```javascript
+// 1. 创建XMLHttpRequest对象
+var xmlHttp = new XMLHttpRequest();
+// 2. 设置和服务端请求方式
+var url = "http://localhost:8080/JsLearning3/getAjax";
+xmlHttp.open("POST", url, true);
+// 3. 注册回调信息
+xmlHttp.onreadystatechange = function() {
+    // readyState: 0-初始化， 1-服务端连接建立， 2-请求已接收， 3-请求处理中， 4-请求已完成
+    if (xmlHttp.readyState == 4) {
+        if (xmlHttp.status == 200) {
+            console.log(xmlHttp.responseText)
+        } else {
+            console.error('request error');
+        }
+    }
+}
+// 4. 设置请求数据，发起请求
+xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded;charset=UTF-8");
+xmlHttp.send('data');
+```
+
+
+
 # api如何验证合法性

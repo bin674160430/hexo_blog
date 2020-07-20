@@ -65,3 +65,9 @@ SPA不利于SEO，部分搜索引擎如Google、bing等，它们的爬虫虽然�
 # JWT
 
 **全称**：JSON Web Token，通常称为 `JSON令牌`，`RFC 7519`中定义的用于`安全的`将信息作为`Json对象`进行传输的一种形式。
+
+# AJAX
+
+**全称**：Asynchronous JavaScript and XML (异步的javascript 和 xml)
+
+AJAX不是新的编程语言，而是一种使用标准的新语法，与服务端交换数据并更新部分网页
