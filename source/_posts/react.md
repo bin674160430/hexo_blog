@@ -13,12 +13,280 @@ tags:
 - 状态变更时，通过`diff`算法记录新树和旧树的差异
 - 将差异更新到`DOM`中
 
-# Redux的实现
+# [Redux的实现](https://www.cnblogs.com/pluslius/p/10580727.html)
 
-# Redux的高级组件和高阶函数
+1. `reducer`函数 核心`api`，根据现有state和action返回一个新的`state`，交给`store`
+
+2. `action`
+
+   ```javascript
+   // 对象，同步
+   export const action1 = {
+       type: 'action1',
+       data: {}
+   }
+   // 函数，异步，返回的函数接收一个dispatch参数
+   export const login = () => {
+       return dispatch => {
+           
+       }
+   }
+   ```
+
+3. `store` 管理整个`state`, 主要方法 `getState(), dispatch(action-creator), subsribe(listener)`
+
+{% image redux.png 示例图 %}
+
+```javascript
+// 创建store, 一个数据容器
+const store = createStore(reducerFn);
+
+// state 数据集合
+const state = store.getState();
+
+// action, 一个对象, type是必须的，表示Action名称，其它属性可以自由设置
+const action = {
+    type: 'Add_TODO',
+    payload: 'Learn Redux'
+}
+// view要发送多小种消息，就会有多少种action，可以定义一个函数来生成action，这个函数叫Action Greator
+const ADD_TODO = 'add to do';
+function addTodo(text) {
+    return {
+        type: ADD_TODO,
+        text
+    }
+}
+
+const action = addTodo('Learn Redux');
+
+// 发起action
+store.dispatch(addTodo('Learn Redux'));
+
+// Reducer, store收到action以后，由reducer函数处理，给出一个新的state
+const reducer = function(state, action) {
+    // ...
+    return new_state;
+}
+
+// 工作流程
+// 先发起action
+store.dispatch(action);
+
+// store自动调用reducer，并且传入两个参数：当前state和收到的action，reducer会返回新的state
+let nextState = todoApp(preState, action)
+
+// state 一旦有变化，store就会调用监听函数
+store.subscribe(listener)
+
+function listener() {
+    let newState = store.getState();
+    component.setState(newState);
+}
+```
+
+`redux`中间件就是对store的dispatch升级处理支持对象和函数，常用的中间件有 `redux-thunk`, `redux-saga` 用来解决`redux`中异步操作，`redux-thunk`是把异步操作放在action里操作，`redux-saga`是把异步操作单独拆分出来放在一个文件操作
+
+## createStore
+
+```javascript
+function createStore(reducer, initState, enhancer) {
+    // 接收state，添加观察者
+    let state = initState;
+    let listeners = [];
+    
+    // 获取state
+    function getState() {
+        return JSON.parse(JSON.stringify(state))
+    }
+    
+    // 造一个dispatch来发送action
+    function dispatch(action) {
+        state = reducer(state, action);
+        listeners.forEach(listener => listener());
+    }
+    
+    // 添加订阅者
+    function subscribe(listener) {
+        listeners.push(listener);
+        return function() {
+            listeners.filter(item => item != listener)
+        }
+    }
+    
+    return {
+        getState,
+        dispatch,
+        subscribe
+    }
+}
+```
+
+## combineReducer
+
+```javascript
+// 先拿到reducer
+function combineReducer(reducer) {
+    // 把state和action交给reducer处理
+    return (state={}, action) => (
+        // 拿到对应reducer的处理结果把原来的属性拷贝到新对象上
+    	Object.keys(reducer).reduce((cur, key) => {
+            cur[key] = reducer[key](state[key], action);
+            return cur;
+        }, {})
+    )
+}
+```
+
+## bindActionsCreators
+
+```javascript
+function bindActionsCreators(actions, dispatch) {
+    // 先拿到actions和dispatch
+    return Object.keys(actions).reduce((obj, key) => {
+        obj[key] = function() {
+            // 等执行的时候再调用真正的actions和dispatch
+            dispatch(actions[key].apply(null, arguments))
+        }
+    }, {})
+}
+```
+
+## ApplyMiddleware
+
+在action之后，reducer处理之前
+
+```javascript
+// compose 先执行栈顶的middleware，然后回流到栈底的middleware
+const compose = middlewares => middlewares.reduce((a, b) => (
+	(...args) => a(b(...args))
+))
+
+// 接收中间件
+function applyMiddleware(...middlewares) {
+    // 接收store方法
+    return function(createStore) {
+        // 接收reducer
+        return function(reducer) {
+            let store = createStore(reducer);
+            let dispatch;
+            let middlewareAPI = {
+                getState: store.getState,
+                dispatch: action => dispatch(action)
+            }
+            // 把state 和 dispatch 方法传给中间件的一个函数
+            middlewares = middlewares.map(middleware => middleware(middlewareAPI));
+            dispatch = compose(...middlewares)(store.dispatch);
+            return {
+                ...store,
+                dispatch // 先执行middleware1
+            }
+        }
+    }
+}
+
+const middleware1 (dispatch) => {
+    (action) => {
+        console.log('middleware1');
+        dispatch(action);
+        console.log('after middleware1');
+        return res;
+    }
+}
+
+const middleware2 (dispatch) => {
+    (action) => {
+        console.log('middleware1');
+        dispatch(action);
+        console.log('after middleware2');
+        return res;
+    }
+}
+
+// middleware1 -> middleware2 -> action -> middleware2 -> middleware1
+let middlewares = [middleware1,middleware2];
+
+const dispatch = (action) => {
+    console.log(`action: ${action}`);
+    return action;
+}
+
+// 这是最后一个中间件，调用它将返回第一个中间件
+const afterDispatch = compose(middlewares)(dispatch);
+
+const testAction = args => ({
+    type: "ACTION_TEST",
+    args
+})
+
+afterDispatch(testAction('plus!'))
+```
+
+## react-redux
+
+```javascript
+class Provider extends React.Component {
+    // 静态属性childContextTypes声明提供给子组件的Context对象属性，
+    // 并实现一个实例getChildContext，返回一个Context纯对象
+    static childContextTypes = {
+        store: propTypes.object.isRequired
+    }
+	getChildContext() {
+        return {
+            store: this.props.store
+        }
+    }
+	render() {
+        return this.props.children;
+    }
+}
+
+function Connect(mapStateToProps, mapDispatchToProps) {
+    return function(WrapedComponent) {
+        class ProxyComponent extends React.Component {
+            static contextType {
+                store: propTypes.object
+            }
+        	constructor(props, context) {
+                super(props, context);
+                this.store = context.store;
+                this.state = mapStateToProps(this.store.getState);
+            }
+        	componentWillMount() {
+                // 当state变化的时候通过setState更新组件的变化
+                this.unsubscribe = this.store.subscribe(() => {
+                    this.setState(mapStateToProps(this.store.getState()))
+                });
+            }
+        	componentWillUnmount() {
+                // 当组件删除的时候取消监听state的变化
+                this.unsubscribe();
+            }
+        	render() {
+                let actions = {};
+                if(typeof mapDispatchToProps == 'function') {
+                    actions = mapDispatchToProps(this.store.dispatch);
+                } else if(mapDispatchToProps == 'object') {
+                    actions = bindActionCreators(mapDispatchToProps, this.store.dispatch)
+                }
+                reurn <WrapedComponent {...this.state} {...actions}>
+            }
+        }
+ 		return ProxyComponent;
+    }
+}
+```
+
+# Redux的高阶组件和高阶函数
+
+`高阶组件`：函数接收一个组件，产生新的组件
+
+`高阶函数`：参数是函数或者返回值是函数（`filter, map, addEventListener`）
 
 # React的hooks，具体有userState, userEffect, useContext等的实现
 
-# React声明周期
+# React生命周期
 
 # React的refs的作用
+
+# PureComponent 与 Component

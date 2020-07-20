@@ -18,7 +18,7 @@ tags:
 
 不同点：
 
-​	bind 返回该函数； apply、 call 立即调用
+​	bind 返回该函数； apply、 call 立即调用；call 参数和apply参数不同，apply是数组
 
 `call(object, ...arguments)`
 
@@ -175,3 +175,4 @@ xmlHttp.send('data');
 
 
 # api如何验证合法性
+
