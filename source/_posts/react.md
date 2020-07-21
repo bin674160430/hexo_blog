@@ -35,6 +35,23 @@ tags:
 
 3. `store` 管理整个`state`, 主要方法 `getState(), dispatch(action-creator), subsribe(listener)`
 
+在项目开发中，使用react-redux来简化react中使用redux
+
+```jsx
+// 向所有组件提供store
+<Provider store={store}>...</Provider>
+
+class MyComponent extends Component {
+    
+}
+connect(
+	state => { ... }, // 从state中获取属性
+    dispatch => { ... } // 执行dispatch分发action
+)(MyComponent)
+```
+
+
+
 {% image redux.png 示例图 %}
 
 ```javascript
@@ -279,7 +296,69 @@ function Connect(mapStateToProps, mapDispatchToProps) {
 
 # Redux的高阶组件和高阶函数
 
-`高阶组件`：函数接收一个组件，产生新的组件
+`Higher-Order Components` ``HOC 高阶组件`：是一个函数，能够接收一个组件并返回一个新的组件，例如`react-redux`中的`connect`, `react-router-dom`中的`withRouter`，如下例子所示：
+
+```react
+class TestInput extends Component {
+    render() {
+        return <input {...this.props}>
+    }
+}
+```
+
+```react
+// 属性代理
+function addPropHOC(WrappedComponent) {
+    return class PP extends Component {
+        constructor(props) {
+            super(props);
+            this.state = { value: '' };
+        }
+        // 提取state控制交互数据
+        onChange(event) {
+            this.setState({ value: event.target.value });
+        }
+        
+        // 生命周期处理其它内容
+        componentWillMount() {
+            
+        }
+        
+        render() {
+            const newProps = {
+                value: this.state.value,
+                onChange: this.onChange
+            }
+            // 其它元素包裹，布局改动
+            return (
+                <div>
+                    <label>label:</label>
+                    <!-- props属性代理，附加其它属性传递 -->
+                	<WrappedComponent {...this.props} {...newProps} />
+                </div>
+            )
+        }
+    }
+}
+
+addPropHOC(TestInput);
+```
+
+```react
+// 继承反转，实现组件同名方法，将覆盖原组件方法，如果调用需要用super，真正实现劫持，具有较强的侵入性
+function extHOC(WrappedComponent) {
+    return class Example extends WrappedComponent {
+        componentWillMount() {
+            super.componentWillMount();
+        }
+        render() {
+            return super.render();
+        }
+    }
+}
+
+extHOC(TestInput);
+```
 
 `高阶函数`：参数是函数或者返回值是函数（`filter, map, addEventListener`）
 
@@ -287,6 +366,66 @@ function Connect(mapStateToProps, mapDispatchToProps) {
 
 # React生命周期
 
-# React的refs的作用
+生命周期状态：
+
+- `Mounting`    挂载，已插入真实DOM
+  - `constructor(props)`    如果不初始化state或不进行方法绑定，可以不实现构造函数，需要先调用`super(props)`
+  - `static getDerivedStateFromProps(props, state)`    在render之前调用，并且在初始化及后续更新都会被调用，返回一个对象来更新state，如果返回null则不更新任何内容
+  - ~~`componentWillMount`~~即将过时
+  - `render()`
+  - `componentDidMount()`    组件挂载后调用
+- `Updating`    更新，正在被重新渲染，当props或state发送变化触发
+  - `static getDerivedStateFromProps()`
+  - ~~`componentWillUpdate,   componentWillReceiveProps`~~ 即将过时
+  - `shouldComponentUpdate(nextProps, nextState)`    当`props`或`state`发生变化，渲染之前被调用，返回值默认`true`，首次渲染或者调用`forceUpdate()`不会调用该方法，返回`false`不更新，不调用`componentWillUpdate, render, componentDidUpdate`，但不会阻止子组件`state`更新时重新渲染
+  - `render()`
+  - `getSnapshotBeforeUpdate()`    在最近一次渲染输出到DOM之前调用，使得组件能在发生更改之前从DOM中捕获一些信息（例如：滚动位置），返回值将作为参数传递给`componentDidUpdate`
+  - `componentDidUpdate(prevProps, prevState, snapshot)`    更新后调用，首次渲染不会调用，如果`shouldComponentUpdate返回false，则不会调用`
+- `Unmounting`    卸载，已移除真实DOM
+  - `componentWillUnmount()`    组件卸载销毁之前调用，清除timer、网络请求等资源
+- Error    错误处理，渲染过程、生命周期、子组件构造函数中抛出错误
+  - `static getDerivedStateFromError()`
+  - `componentDidCatch(error, info)`
+
+```react
+class ScrollingList extends React.Component {
+  constructor(props) {
+    super(props);
+    this.listRef = React.createRef();
+  }
+
+  getSnapshotBeforeUpdate(prevProps, prevState) {
+    // 我们是否在 list 中添加新的 items ？
+    // 捕获滚动​​位置以便我们稍后调整滚动位置。
+    if (prevProps.list.length < this.props.list.length) {
+      const list = this.listRef.current;
+      return list.scrollHeight - list.scrollTop;
+    }
+    return null;
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    // 如果我们 snapshot 有值，说明我们刚刚添加了新的 items，
+    // 调整滚动位置使得这些新 items 不会将旧的 items 推出视图。
+    //（这里的 snapshot 是 getSnapshotBeforeUpdate 的返回值）
+    if (snapshot !== null) {
+      const list = this.listRef.current;
+      list.scrollTop = list.scrollHeight - snapshot;
+    }
+  }
+
+  render() {
+    return (
+      <div ref={this.listRef}>{/* ...contents... */}</div>
+    );
+  }
+}
+
+// 重点是从 getSnapshotBeforeUpdate 读取 scrollHeight 属性，因为 “render” 阶段生命周期（如 render）和 “commit” 阶段生命周期（如 getSnapshotBeforeUpdate 和 componentDidUpdate）之间可能存在延迟。
+```
+
+
 
 # PureComponent 与 Component
+
+内容完全相同，`PureComponent`通过`props`和`state`的浅对比来实现`shouldComponentUpdate`，所以不允许重写`shouldComponentUpdate`，如果是比较复杂的数据结构，会因深层的数据不一致而产生错误的否定判断，导致页面得不到更新
