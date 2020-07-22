@@ -15,6 +15,8 @@ tags:
 
 # [Redux的实现](https://www.cnblogs.com/pluslius/p/10580727.html)
 
+组件发出`action`，状态管理器接收到`action`，使用`reducer`函数算出新的状态
+
 1. `reducer`函数 核心`api`，根据现有state和action返回一个新的`state`，交给`store`
 
 2. `action`
@@ -298,7 +300,7 @@ function Connect(mapStateToProps, mapDispatchToProps) {
 
 `Higher-Order Components` ``HOC 高阶组件`：是一个函数，能够接收一个组件并返回一个新的组件，例如`react-redux`中的`connect`, `react-router-dom`中的`withRouter`，如下例子所示：
 
-```react
+```javascript
 class TestInput extends Component {
     render() {
         return <input {...this.props}>
@@ -306,7 +308,7 @@ class TestInput extends Component {
 }
 ```
 
-```react
+```javascript
 // 属性代理
 function addPropHOC(WrappedComponent) {
     return class PP extends Component {
@@ -344,7 +346,7 @@ function addPropHOC(WrappedComponent) {
 addPropHOC(TestInput);
 ```
 
-```react
+```javascript
 // 继承反转，实现组件同名方法，将覆盖原组件方法，如果调用需要用super，真正实现劫持，具有较强的侵入性
 function extHOC(WrappedComponent) {
     return class Example extends WrappedComponent {
@@ -363,6 +365,182 @@ extHOC(TestInput);
 `高阶函数`：参数是函数或者返回值是函数（`filter, map, addEventListener`）
 
 # React的hooks，具体有userState, userEffect, useContext等的实现
+
+react核心是组件，`v16.8`之前，组件的标准写法是`class`，以下一个简单按钮点击修改文本demo
+
+```javascript
+import React, { Component } from 'react';
+
+export default class Button extends Component {
+    constructor() {
+        super();
+        this.state = { buttonText: 'click!!!' };
+        this.handleClick = this.handleClick.bind(this);
+    }
+    handleClick() {
+        this.setState({ buttonText: 'been clicked.' });
+    }
+    render() {
+        const { buttonText } = this.state;
+        return <button onClick={this.handleClick}>{buttonText}</button>
+    }
+}
+```
+
+## React Hooks
+
+可以在不编写`class`的情况下使用`state`和其它`react`特性，不能在`class`组件中使用，如果需要外部功能以钩子的方式添加使用，钩子一律使用`use`前缀标识，需要使用`xxx`功能，钩子命名为`usexxx`，默认提供的四个常用钩子`useState, useContext, useReducer, useEffect`，`Hook`是一种复用状态逻辑，不复用本身`state`，每次调用都有一个完全独立的`state`
+
+## useState(initState): array
+
+状态钩子，用于函数组件引入状态state，纯函数不能有状态，`useState(initState)` 接受状态初始值，作为参数，返回一个数组，数组第一个成员是变量，指向当前状态值，第二个成员是一个函数，用来更新状态，约定是`set`前缀加状态变量名
+
+```javascript
+import React, { useState } from 'react';
+
+export default function Button() {
+    const [ buttonText, setButtonText ] = useState('click!!!');
+    function handleClick() {
+        return setButtonText('been clicked.');
+    }
+    return <button onClick={handleClick}>{buttonText}</button>
+}
+```
+
+## useContext(): object
+
+共享状态钩子，如果需要在组件之间共享状态，可以使用`useContext()`
+
+```javascript
+// 创建一个context
+const AppContext = React.createContext({});
+<AppContext.Provider value={{username: 'superawesome'}}>
+    <div className="app">
+        <Navbar />
+        <Messages />
+    </div>
+</AppContext.Provider>
+
+const Navbar = () => {
+    const { username } = useContext(AppContext);
+    return <p>{username}</p>
+}
+```
+
+## useReducer(reducer, initState): array
+
+引入`reducer`功能，接受`reducer`函数和初始状态作为参数，返回数组，第一个成员是当前状态值，第二个成员是发送`action`的`dispatch`函数
+
+```javascript
+const myReducer = (state, action) => {
+    switch(action.type) {
+        case 'countUp':
+            return {
+                ...state, 
+                count: state.count
+            }
+        default:
+            return state;
+    }
+}
+
+function AddCountButton() {
+    const [state, dispatch] = useReducer(myReducer, { count: 0 });
+    return <button onClick={() => dispatch({ type: 'countUp' })}>{state.count}</button>
+}
+```
+
+## useEffect()
+
+副作用钩子，接受两个参数，第一个参数是函数，第二个参数是一个数组，用于给出Effect的依赖项，只要这个数组发生变化，`useEffect`就会执行，第二个参数可以忽略，每次组件渲染，就会执行`useEffect`，相当于 `componentDidMount` 和 `componentDidUpdate`
+
+```javascript
+const Person = ({ personId }) => {
+    const [loading, setLoading] = useState(true);
+    const [person, setPerson] = useState({});
+    
+    useEffect(() => {
+        setLoading(true);
+        fetch(`url/${personId}`)
+        	.then(response => response.json())
+        	.then(data => {
+				setPerson(data);
+            	 setLoading(false);
+            })
+    }), [personId];
+    
+    if (loading === true) {
+        return <p>Loading...</p>;
+    }
+    
+    return <p>{JSON.stringify(person)}</p>;
+}
+```
+
+## 自定义Hooks
+
+封装一个自定义Hook
+
+```javascript
+const usePerson = (personId) => {
+    const [ loading, setLoading ] = useState(true);
+    const [ person, setPerson ] = useState({});
+    
+    useEffect(() => {
+        setLoading(true);
+        fetch(`url/${personId}`)
+        	.then(response => response.json())
+        	.then(data => {
+				setPerson(data);
+            	 setLoading(false);
+            })
+    }, [personId]);
+    return [ loading, person ];
+}
+
+const Person = ({ personId }) => {
+    const [loading, person] = usePerson(personId);
+    if (loading === true) {
+        return <p>Loading...</p>;
+    }
+    return <p>{JSON.stringify(person)}</p>;
+}
+```
+
+```javascript
+// 订阅好友的在线状态
+function useFriendStatus(friendID) {
+    const [isOnline, setIsOnline] = useState(null);
+    function handleStatusChange(status) {
+        setIsOnline(status.inOnline);
+    }
+    useEffect(() => {
+        ChatAPI.subscribeToFriendStatus(friendID, handleStatusChange);
+        return () => {
+            ChatAPI.unsubscribeFromFriendStatus(friendID, handleStatusChange);
+        }
+    });
+}
+
+function FriendStatus(props) {
+    const isOnline = useFriendStatus(props.friend.id);
+    if (isOnline === null) {
+        return 'Loadin....';
+    }
+    return isOnline ? 'Online' : 'Offline';
+}
+
+function FriendListItem(props) {
+    const isOnline = useFriendStatus(props.friend.id);
+    return (
+    	<li style={{ color: isOnline ? 'green' : 'black' }}>
+        	{props.friend.name}
+        </li>
+    );
+}
+```
+
+
 
 # React生命周期
 
@@ -387,7 +565,7 @@ extHOC(TestInput);
   - `static getDerivedStateFromError()`
   - `componentDidCatch(error, info)`
 
-```react
+```javascript
 class ScrollingList extends React.Component {
   constructor(props) {
     super(props);
@@ -396,7 +574,7 @@ class ScrollingList extends React.Component {
 
   getSnapshotBeforeUpdate(prevProps, prevState) {
     // 我们是否在 list 中添加新的 items ？
-    // 捕获滚动​​位置以便我们稍后调整滚动位置。
+    // 捕获滚动位置以便我们稍后调整滚动位置。
     if (prevProps.list.length < this.props.list.length) {
       const list = this.listRef.current;
       return list.scrollHeight - list.scrollTop;
