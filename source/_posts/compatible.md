@@ -7,6 +7,14 @@ tags:
     - 兼容
 ---
 
+# IE和其他浏览器不一样的特性
+
+- ie的引擎是Trident，MSHTML
+- Trident内核曾经几乎与w3c标准脱节(2005年)
+- Trident内核的大量bug等安全性问题没有得到及时解决
+- js有很多独立的方法，例如绑定事件的attachEvent, 创建事件createEventObject，ajax的ActiveXObject等
+- css有独立的处理方式，例如透明，底版本ie使用滤镜的方式
+
 # 移动端伪装:active生效
 
 css伪类`:active` 生效，只需要给`document`绑定`touchstart`或`touchend`事件

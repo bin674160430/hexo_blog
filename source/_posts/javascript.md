@@ -7,6 +7,44 @@ tags:
     - javascript
 ---
 
+# == 和 === 的区别
+
+`===`为等同符，等号两边类型、值相同返回`true`，等号两边值类型不同或者值不同直接返回`false`
+
+`==` 为等值符，等号两边类型不同将自动转换成相同类型后比较值
+
+```javascript
+// 等号两边是boolean, string, number, 优先转换数字进行比较
+null == undefined // true
+30 == '30' // true, 类型不同，一个数值，一个字符串，字符串转数值再比较
+true == '1' // true, 任意值是boolean，需要转数值后再比较 true -> 1, false -> 0
+new Object() == '[object Object]' // true，对象与数值、字符串，把对象转成基础类型值再比较，利用toString或者valueOf, js 核心内置类，会尝试valueOf先于toString
+```
+
+
+
+# 原型链
+
+`prototype`指向构造函数，只有函数才有的属性，用来给子类继承
+
+`__proto__`指向构建该对象的`prototype`，每个对象除了null外都会有的属性
+
+每个构造函数都有一个原型链对象，原型对象都包含一个指向构造函数的指针，而实例都包含一个指向原型对象的内部指针。如果让原型对象等于另一个类型的实例，这个时候原型对象将包含一个指向另外一个原型的指针，相应地，另一个原型中也包含着一个指向另一个构造函数的指针，假如另一个原型又是另一个类的实例，那么上述关系依然成立，照这样层层递进，就构成了实例与原型的链条。
+
+{% image 原型链.png  %}
+
+```javascript
+function func() {} // func的prototype对象的另一个属性是constructor，这个属性指向函数func本身
+func.prototype // {constructor: ƒ} constructor: ƒ func() __proto__: Object
+func === func.prototype.constructor // true
+Object.prototype === func.prototype.__proto__ // true
+Object.prototype.isPrototypeOf(func) // true
+func instanceof Object // true
+
+var a = new func();
+a.__proto__ === func.prototype // true, a.__proto__ === func.prototype === constructor
+```
+
 # call, apply, bind
 
 相同点：
@@ -174,5 +212,8 @@ xmlHttp.send('data');
 
 
 
-# api如何验证合法性
+# 什么是严格模式与合理模式
 
+严格模式：`use strict`以浏览器支持的最高标准运行，消除`javascript`一些不合理、不严谨之处，减少一些怪异行为
+
+合理/普通模式：页面以宽松向下兼容的方式显示，模拟老式浏览器行为
