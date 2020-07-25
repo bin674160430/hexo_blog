@@ -607,3 +607,9 @@ class ScrollingList extends React.Component {
 # PureComponent 与 Component
 
 内容完全相同，`PureComponent`通过`props`和`state`的浅对比来实现`shouldComponentUpdate`，所以不允许重写`shouldComponentUpdate`，如果是比较复杂的数据结构，会因深层的数据不一致而产生错误的否定判断，导致页面得不到更新
+
+# React中refs的作用
+
+可以使用`refs`来访问`dom`，做一些动画交互、媒体控件的播放，获取焦点、文本等
+
+在组件挂载时候，会调用ref回调函数并传入`DOM`元素，卸载时调用并传入`null`，在`componentDidMount`或`componentDidUpdate`触发前，react会保证refs一定是最新的
