@@ -17,42 +17,78 @@ tags:
 
 {% image css-box.jpg 图片 %}
 
+# CSS选择器有哪些？哪些属性可以继承？优先级算法怎么计算？
 
+- `#id` id选择器
+- `.class` 类选择器
+- `div, p` 标签选择器
+- `div+p` 相邻选择器
+- `ul>li` 子选择器
+- `ul li` 后代选择器
+- `*` 通配符选择器
+- `input[type=text]` 属性选择器
+- `a:hover, li:nth-child` 伪类选择器
 
-# CSS 选择器有哪些
+可继承的属性：`font-size, font-framily, color, ul, li, dl, dd, dt`
 
-**\*通用选择器**：选择所有元素，不参与计算优先级，兼容性 IE6+
-**#X id选择器**：选择 id 值为 X 的元素，兼容性：IE6+
-**.X 类选择器**： 选择 class 包含 X 的元素，兼容性：IE6+
-**X Y 后代选择器**： 选择满足 X 选择器的后代节点中满足 Y 选择器的元素，兼容性：IE6+
-**X 元素选择器**： 选择标所有签为 X 的元素，兼容性：IE6+
-**:link，:visited，:focus，:hover，:active 链接状态**： 选择特定状态的链接元素，顺序 LoVe HAte，兼容性: IE4+
-**X + Y 直接兄弟选择器**：在X 之后第一个兄弟节点中选择满足 Y 选择器的元素，兼容性： IE7+
-**X > Y 子选择器**： 选择 X 的子元素中满足 Y 选择器的元素，兼容性： IE7+
-**X ~ Y 兄弟**： 选择X 之后所有兄弟节点中满足 Y 选择器的元素，兼容性： IE7+
-**[attr]**：选择所有设置了 attr 属性的元素，兼容性 IE7+
-**[attr=value]**：选择属性值刚好为 value 的元素
-**[attr~=value]**：选择属性值为空白符分隔，其中一个的值刚好是 value 的元素
-**[attr|=value]**：选择属性值刚好为 value 或者 value-开头的元素
-**[attr^=value]**：选择属性值以 value 开头的元素
-**[attr$=value]**：选择属性值以 value 结尾的元素
-**[attr=value]***：选择属性值中包含 value 的元素
-**[:checked]**：选择单选框，复选框，下拉框中选中状态下的元素，兼容性：IE9+
-**X:after, X::after**：after 伪元素，选择元素虚拟子元素（元素的最后一个子元素），CSS3 中::表示伪元素。兼容性:after 为 IE8+，::after 为 IE9+
-**:hover**：鼠标移入状态的元素，兼容性 a 标签 IE4+， 所有元素 IE7+
-**:not(selector)**：选择不符合 selector 的元素。不参与计算优先级，兼容性：IE9+
-**::first-letter**：伪元素，选择块元素第一行的第一个字母，兼容性 IE5.5+
-**::first-line**：伪元素，选择块元素的第一行，兼容性 IE5.5+
-**:nth-child(an + b)**：伪类，选择前面有 an + b - 1 个兄弟节点的元素，其中 n >= 0， 兼容性 IE9+
-**:nth-last-child(an + b)**：伪类，选择后面有 an + b - 1 个兄弟节点的元素 其中 n >= 0，兼容性 IE9+
-**X:nth-of-type(an+b)**：伪类，X 为选择器，解析得到元素标签，选择前面有 an + b - 1 个相同标签兄弟节点的元素。兼容性 IE9+
-**X:nth-last-of-type(an+b)**：伪类，X 为选择器，解析得到元素标签，选择后面有 an+b-1 个相同标签兄弟节点的元素。兼容性 IE9+
-**X:first-child**：伪类，选择满足 X 选择器的元素，且这个元素是其父节点的第一个子元素。兼容性 IE7+
-**X:last-child**：伪类，选择满足 X 选择器的元素，且这个元素是其父节点的最后一个子元素。兼容性 IE9+
-**X:only-child**：伪类，选择满足 X 选择器的元素，且这个元素是其父元素的唯一子元素。兼容性 IE9+
-**X:only-of-type**：伪类，选择 X 选择的元素，解析得到元素标签，如果该元素没有相同类型的兄弟节点时选中它。兼容性 IE9+
-**X:first-of-type**：伪类，选择 X 选择的元素，解析得到元素标签，如果该元素 是此此类型元素的第一个兄弟。选中它。兼容性 IE9+
+优先级算法计算：
 
+1. 优先级就近原则，同权重情况下样式定义最近者为准
+2. 载入样式以最后载入的定位为准
+3. `!important`> `id`>`class`>`tag`
+4. `important`比内联优先级高，但内联比`id`高
+
+# css3新增的伪类
+
+`:first-child, :first-of-type, :last-child, :last-of-type, :only-child, :only-of-type, :nth-child(n), :nth-last-child(n), :nth-of-type, :nth-last-of-type`
+
+`input:enabled`
+
+# position
+
+默认值： `static`
+
+相对定位: `relative`
+
+绝对定位: `absolute`, `fixed`
+
+# relative 和 absolute的定位原点是？
+
+`relative` 定位原点是元素本身所在的位置
+
+`absolute` 定位原点离自己元素最近的`absolute`或者`relative`的父元素的左上角为原点
+
+# 解释一下css3的FLexbox弹性盒布局模型以及适用场景？
+
+设置`display: flex;`作为容器，存在水平主轴`main axis`和垂直的交叉轴`cross axis`，主轴的开始位置（与边框的交叉点）为`main start`，结束位置为`main end`；交叉轴的开始位置为`cross start`，结束位置为`cross end`；子集元素自动成为`flex item`项目，项目默认沿主轴排列，单个项目占据的主轴空间叫做`main size`, 占据的交叉轴叫做`corss size`，项目中的`float, clear, vertical-align`属性将失效，适用于移动端、当代浏览器，ie10+
+
+## 容器属性：
+
+`flex-direction: row|row-reverse|column|column-reverse` 主轴方向，项目的排列方向，水平、垂直方向
+
+`flex-wrap: nowrap|wrap|wrap-reverse`项目排满的情况下换行方式
+
+`flex-flow: row nowrap`flex-direction 和 flex-wrap 属性简写
+
+`justify-content: flex-start|flex-end|center|space-between|space-around`项目主轴对齐方式，start沿着主轴起点对齐；end沿着主轴终点对齐；center居中；space-between两端对齐，项目之间的间隔相等；space-around: 每个项目两侧的间隔相等
+
+`align-items: stretch|flex-start|flex-end|center|baseline`项目交叉轴对齐方式，start起点对齐；end终点对齐；center中点对齐；baseline项目第一行文字的基线对齐；stretch默认值，项目高度没有设置成auto将占满整个容器高度
+
+`align-content: stretch|flex-start|flex-end|center|space-between|space-around`定义多个轴线的对齐方式，如果项目只有一个轴线，不起作用
+
+## 项目属性：
+
+`order: 0`排列顺序，数值越小越靠前
+
+`flex-grow: 0`放大比例，默认0，存在剩余空间，也不放大，如果所有项目`flex-grow`都是1，将平分盒子剩余空间；如果一个项目的`flex-grow:2`，其他都是1，那么前者占据的剩余空间比其他项多一倍
+
+`flex-shrink: 1`缩小比例，如果空间不足，项目缩小，如果所有项目的`flex-shrink: 1`，空间不足时，都将等比缩小；如果一个项目的`flex-shrink: 0`，其他都是1，那么空间不足时，前者不缩小
+
+`flex-basis: auto`定义在分配多余空间之前，项目占据的主轴空间`main size`，浏览器根据这个属性，计算主轴是否有多余空间，默认值`auto`，即项目本来的大小
+
+`flex: 0 1 auto` `flew-grow, flex-shrink, flex-basis`的简写，后面两个属性可选
+
+`align-self: auto`运行单个项目有与其他项目不一样的对齐方式，可覆盖`align-items`，默认`auto`继承父元素的`align-items`属性，如果没有父元素，等同于`stretch`
 
 
 # css sprite 是什么,优缺点?
@@ -346,6 +382,20 @@ z 轴上的默认层叠顺序如下（从下到上）：
 </style>
 ```
 
+------
+
+- 弹性盒子
+
+```css
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+```
+
+
+
 # 如何竖直居中一个元素
 
 - 绝对定位居中 `absolute`跳出内容流，其余部分渲染时绝对定位部分不进行渲染
@@ -406,4 +456,51 @@ z 轴上的默认层叠顺序如下（从下到上）：
     z-index: 999;
 }
 ```
+
+# 如何居中一个浮动元素？
+
+```html
+<div class="outerbox">
+    <div class="innerbox">
+        我是浮动的
+    </div>
+</div>
+
+<style>
+    .outerbox {
+        float: left;
+        position: relative;
+        left: 50%;
+    }
+    .innerbox {
+        float: right;
+        position: relative;
+        right: 50%;
+    }
+</style>
+```
+
+# display有哪些值，有什么作用？
+
+常用的有`none 不显示`, `block 块级元素，前后带换行符`, `inline 默认值，内联元素，前后没有换行符`, `inline-block 行内块元素`, `flex 弹性盒子布局`
+
+| display 值         | 描述                                       |
+| ------------------ | ------------------------------------------ |
+| none               | 不显示                                     |
+| block              | 块级元素，前后带换行符                     |
+| inline             | 默认值，被显示为内联元素，前后没有带换行符 |
+| inline-block       | 行内块元素                                 |
+| list-item          | 列表                                       |
+| run-in             | 根据上下文作为块级元素或内联元素           |
+| table              | 块级表格，类似`<table>`，前后带换行符      |
+| inline-table       | 内联表格，类似`<table>`, 前后没有换行符    |
+| table-row-group    | 一个或多个行的分组，类似`<tbody>`          |
+| table-header-group | 一个或多个行分组，类似`<thead>`            |
+| table-footer-group | 一个或多个行分组，类似`<tfoot>`            |
+| table-row          | 一个表格行，类似`<tr>`                     |
+| table-column-group | 一个或多个列的分组，类似`colgroup`         |
+| table-column       | 一个单元格列，类似`col`                    |
+| table-cell         | 一个单元格，类似`<th><td>`                 |
+| table-caption      | 一个表格标题，类似`<caption>`              |
+| inherit            | 继承父元素`display`值                      |
 
