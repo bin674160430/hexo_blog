@@ -104,7 +104,7 @@ function listener() {
 }
 ```
 
-`redux`中间件就是对store的dispatch升级处理支持对象和函数，常用的中间件有 `redux-thunk`, `redux-saga` 用来解决`redux`中异步操作，`redux-thunk`是把异步操作放在action里操作，`redux-saga`是把异步操作单独拆分出来放在一个文件操作
+`redux`中间件就是对`store`的`dispatch`升级处理支持对象和函数，常用的中间件有 `redux-thunk`, `redux-saga` 用来解决`redux`中异步操作，`redux-thunk`是把异步操作放在action里操作，`redux-saga`是把异步操作单独拆分出来放在一个文件操作
 
 ## createStore
 
@@ -173,7 +173,7 @@ function bindActionsCreators(actions, dispatch) {
 
 ## ApplyMiddleware
 
-在action之后，reducer处理之前
+在`action`之后，`reducer`处理之前
 
 ```javascript
 // compose 先执行栈顶的middleware，然后回流到栈底的middleware
@@ -298,7 +298,7 @@ function Connect(mapStateToProps, mapDispatchToProps) {
 
 # Redux的高阶组件和高阶函数
 
-`Higher-Order Components` ``HOC 高阶组件`：是一个函数，能够接收一个组件并返回一个新的组件，例如`react-redux`中的`connect`, `react-router-dom`中的`withRouter`，如下例子所示：
+`Higher-Order Components` `HOC 高阶组件`：是一个函数，能够接收一个组件并返回一个新的组件，例如`react-redux`中的`connect`, `react-router-dom`中的`withRouter`，如下例子所示：
 
 ```javascript
 class TestInput extends Component {
@@ -364,9 +364,9 @@ extHOC(TestInput);
 
 `高阶函数`：参数是函数或者返回值是函数（`filter, map, addEventListener`）
 
-# React的hooks，具体有userState, userEffect, useContext等的实现
+# React的hooks，具体有useState, useEffect, useContext等的实现
 
-react核心是组件，`v16.8`之前，组件的标准写法是`class`，以下一个简单按钮点击修改文本demo
+`react`核心是组件，`v16.8`之前，组件的标准写法是`class`，以下一个简单按钮点击修改文本`demo`
 
 ```javascript
 import React, { Component } from 'react';
