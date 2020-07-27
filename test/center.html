@@ -66,6 +66,16 @@
         position: fixed;
         z-index: 999;
     }
+    .outerbox {
+        float: left;
+        position: relative;
+        left: 50%;
+    }
+    .innerbox {
+        float: right;
+        position: relative;
+        right: 50%;
+    }
 </style>
 <body>
     body
@@ -87,10 +97,15 @@
     <div class="content3">
         aaaaaa aaaaaa a a a a a a a a
     </div> -->
-    <div class="Center-Container">
+    <!-- <div class="Center-Container">
         Center-Container
         <div class="Absolute-Center Is-Fixed">
             Absolute-Center
+        </div>
+    </div> -->
+    <div class="outerbox">
+        <div class="innerbox">
+            我是浮动的
         </div>
     </div>
 </body>
