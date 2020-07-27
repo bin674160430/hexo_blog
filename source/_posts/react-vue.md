@@ -146,6 +146,7 @@ vm.dataList = [3, 4, 5, 6, 7] // 数据进行增删
 
 # MVVM 与 Virtual DOM
 
-相比React，MVVM系框架如Vue都是采用数据绑定，通过观察数据变化并保留对实际DOM元素的应用，当有数据变化时进行对应的操作，MVVM的变化检查数据层面的，而React的检查DOM结构层面的；
+相比`React`，`MVVM`系框架如`Vue`都是采用数据绑定，通过观察数据变化并保留对实际DOM元素的应用，当有数据变化时进行对应的操作，`MVVM`的变化检查数据层面的，而React的检查DOM结构层面的；
 
-MVVM渲染列表的时候，由于每一行都有自己的数据作用域，所以通常都是每一行有一个对应的ViewModel实例，MVVM列表渲染的初始化几乎一定比React慢，创建ViewModel / scope 实例比起 Virtual DOM来说昂贵得多，MVVM实现的一个共同问题就是在列表渲染的数据源变动时，如何有效地复用已经创建的ViewModel实例和DOM元素
+`MVVM`渲染列表的时候，由于每一行都有自己的数据作用域，所以通常都是每一行有一个对应的`ViewModel`实例，`MVVM`列表渲染的初始化几乎一定比React慢，创建`ViewModel` / `scope` 实例比起 Virtual DOM来说昂贵得多，`MVVM`实现的一个共同问题就是在列表渲染的数据源变动时，如何有效地复用已经创建的`ViewModel`实例和`DOM`元素
+
