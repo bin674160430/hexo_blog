@@ -127,7 +127,7 @@ vm.dataList = [3, 4, 5, 6, 7] // 数据进行增删
 
 # Vuex和Redux的区别
 
-`Vuex` `$store`直接注入到了组件实例中，实用`dispatch`、`commit`提交更新，通过`mapState`或者直接通过`this.$store`来读取数据，`Vuex`直接修改`state`，实现原理和`Vue`一样，通过`getter`/`setter`来比较
+`Vuex` `$store`直接注入到了组件实例中，使用`dispatch`、`commit`提交更新，通过`mapState`或者直接通过`this.$store`来读取数据，`Vuex`直接修改`state`，实现原理和`Vue`一样，通过`getter`/`setter`来比较
 
 `Redux`中，每一个组件都需要用`connect`把需要的`props`和`dispatch`连接起来，每次修改数据用`dispatch`，不能直接调用`reducer`进行修改，且都是用新`state`替换旧的`state`，通过`diff`比较差异
 
@@ -150,3 +150,4 @@ vm.dataList = [3, 4, 5, 6, 7] // 数据进行增删
 
 `MVVM`渲染列表的时候，由于每一行都有自己的数据作用域，所以通常都是每一行有一个对应的`ViewModel`实例，`MVVM`列表渲染的初始化几乎一定比React慢，创建`ViewModel` / `scope` 实例比起 Virtual DOM来说昂贵得多，`MVVM`实现的一个共同问题就是在列表渲染的数据源变动时，如何有效地复用已经创建的`ViewModel`实例和`DOM`元素
 
+https://blog.csdn.net/CystalVon/article/details/78428036

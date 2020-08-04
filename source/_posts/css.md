@@ -9,7 +9,7 @@ tags:
 
 
 
-# 介绍一下标准的CSS盒子模型，与底版本的ie盒子模型有什么不同？
+# 介绍一下标准的CSS盒子模型，与低版本的ie盒子模型有什么不同？
 
 `css盒子模型`由`外边距 margin`，`内边距 padding`，`边界 border`，`内容区 width+height`四个属性组成
 
@@ -43,6 +43,32 @@ tags:
 `:first-child, :first-of-type, :last-child, :last-of-type, :only-child, :only-of-type, :nth-child(n), :nth-last-child(n), :nth-of-type, :nth-last-of-type`
 
 `input:enabled`
+
+# c33有哪些新特性？
+
+- css3实现圆角`border-radius`, 阴影`box-shadow`
+- 文字特效`text-shadow`，线性渐变`linear-gradient`，强制文本换行`word-wrap` 边框图片`border-image`
+- 旋转、缩放、定位、倾斜`transform`
+- 增加了更多的选择器、多背景、rgba
+- 在css3中唯一引入的伪元素是`::selection`
+- 媒体查询`@media`, `flex`盒子弹性布局
+
+# 用纯CSS实现三角形是什么原理？
+
+让块级元素的宽高为0，相当于设置了一个中心点，然后设置`border-width`来控制三角形，起始点就相当于一个点
+
+```css
+.triangle {
+    display: block;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-top-color: red;
+    border-right-color: yellow;
+    border-bottom-color: blue;
+    border-left-color: black;
+}
+```
 
 # position
 

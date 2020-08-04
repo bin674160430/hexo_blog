@@ -3,7 +3,7 @@
  * @Autor<©>: maxuebin
  * @Date: 2020-07-16 14:51:55
  * @LastEditors: maxuebin
- * @LastEditTime: 2020-07-24 16:42:21
+ * @LastEditTime: 2020-08-04 12:10:16
  * @FilePath: \hexo_blog\test\兼容.html
 --> 
 <!DOCTYPE html>
@@ -11,7 +11,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>移动兼容</title>
+    <title>兼容</title>
     <style>
         .test-active {
             color: #000;
@@ -20,6 +20,15 @@
             color: palevioletred;
         }
         /* input::-ms-clear{display:none;} */
+        .triangle {
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-top-color: red;
+            border-right-color: yellow;
+            border-bottom-color: black;
+            border-left-color: blue;
+        }
     </style>
 </head>
 <body>
@@ -54,5 +63,18 @@
     <map name="Map">
         <area shape="circle" coords="50,50,50" href="www.baidu.com" target="_blank" />
    </map>
+   <div class="triangle"></div>
+   <div>
+    <div style="height: 20px; /*margin-bottom: 10px;*/">上面元素</div>
+    <div style="height: 20px; margin-top: 30px;">下面元素</div>
+   </div>
+   <div>-----------------</div>
+    <div style="background-color:red;">
+        <div style="margin-top: 30px; background-color: cadetblue;">
+            子元素
+        </div>
+    </div>
+    <div>-----------------</div>
+    <div style="min-height: 100px; background-color: black; color: white;">min-height</div>
 </body>
 </html>
