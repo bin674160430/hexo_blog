@@ -4,7 +4,69 @@
 
 ​	2、react、vue搭建多页面应用
 
+# 简历
 
+## 基本信息
+
+姓名：马学滨
+
+户籍：广东省汕头市
+
+所在城市：广州
+
+出生年月：19940612
+
+## 专业技能
+
+前端:：javascript, html, css, jquery, bookstrap, react, react-router, react-redux, webpack, nodejs, vue, vue-router, vuex,  less, sass, es6-7, typescript
+
+后台：java、spring、springMVC、MockMVC
+
+数据库：mysql, oracle, mongodb
+
+常用工具：visual studio code,  chrome, gitdesktop, svn, typora, photoshop, IIustrator, after effects
+
+## 教育背景
+
+2012.09 - 2015.06	广州工程技术职业学院（信息工程系计算机应用）	大专
+
+## 职业经历
+
+### 2017.06 - 至今，北京恒赢智航科技有限公司，web前端开发
+
+外包驻场南航开发退改、营销渠道系统、明珠会员前端工程；
+
+出差协助深圳分公司产品部主导开发前端项目，制定前后端交互协议，配合UI完成产品设计，提供公用组件模块，集成mockjs分离前端开发调试，编写md说明文档
+
+荣获2018年度优秀员工
+
+### 2016.09-2017.03，北京创世科技有限公司，web前端开发
+
+外包驻场电信，负责改造电信CRM（营业业务受理系统）客户端为web端，开发controller层，对接service，根据UI设计页面制作jsp、css，公用业务弹窗操作页面
+
+### 2016.04-2016.08，广州至拓网络科技有限公司，web前端开发
+
+外包驻场移动，升级改造移动CRM（营业业务受理系统）SilverLight到h5，配合后台调试接口，协助旧项目排查sql数据，开发react表格、操作流程、日历等组件，开发h5页面
+
+### 2015.02-2016.02，广州讯云科技有限公司，web全栈开发
+
+开始参加工作实习，在旧项目的改造过程中，学习web项目相关技术（java、spring、springMVC、mockMVC、html、css、javascript、jquery、mysql、oracle、mongodb）并加以应用，开发并维护米讯后台数据管理系统、普邦园林质检oa工作流、数据报表、web-app上传下载平台
+
+## 项目经验
+
+### 2018.12 - 至今，南航退改、营销渠道系统
+
+项目描述：南航app旅客在线自助退换机票，升舱，企业微信员工非自愿退换机票渠道，支持积分、产品优惠券，售后抽奖活动，客服人工换开异常客票处理单，对接pc官网提供支持退改、升舱入口
+
+职责：根据需求设计开发页面，分离国际变更流程、优化表单校验、提供城市、区域码、机场选择、日历、进度条、输入框等组件，提取与app交互工具类；开放简易查询、补充联系人、地址等通用页面和缓存数据交互
+
+涉及技术：react, react-router, redux, antd-mobile, vue, vue-router, vuex, fis3, less, axios, vant，jquery
+
+### 2018.01 - 2018.11， 智能机组服务平台、FOC3.0运控数字化放行系统
+
+项目描述：根据机组人员日程安排计划行程单方案，提供人性化的页面展示和交互操作，维护航司各项数据，掌握航班运行数据，通过科学的签派放行，运行监控，航班调配等数据配置应用，系统进行智能决策
+
+设计技术：vue, 
 
 中文：
 
