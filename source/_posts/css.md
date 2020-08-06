@@ -530,3 +530,36 @@ body {
 | table-caption      | 一个表格标题，类似`<caption>`              |
 | inherit            | 继承父元素`display`值                      |
 
+# [li与li之间有看不见的空白间隔符是什么原因引起的？有什么解决方法？](https://blog.csdn.net/sjinsa/article/details/70919546)
+
+浏览器的默认行为是把`inline`元素间的空白字符（空格换tab）渲染成一个空格，也就是我们上面代码换行后产生换行字符，而它会变成一个空格，空格占用一个字符的宽度
+
+```html
+<!-- 解决方法一，将li代码全部写在一排 -->
+<ul>
+    <li></li><li></li><li></li>
+</ul>
+
+<!-- 解决方法二，将ul内字符的间距空白-->
+<style>
+    ul { letter-spacing: -5px; }
+    ul li { letter-spacing: normal; }
+</style>
+```
+
+# 为什么要初始化css样式
+
+不同浏览器对有些标签的默认值是不同的，降低浏览器差异，减少重复样式，提高代码质量
+
+# absolute的containing block（容器块）计算方式跟正常流有什么不同？
+
+无论属于哪种，都要先找到其祖先元素中最近的`position`值不为`static`的元素，然后再判断；
+
+1. 如果`absolute`元素为`inline`元素，`containing block`为能够包含这个元素生成的第一个和最后一个`inline box`的`padding box`（除`margin, border`外的区域）的最小矩形
+2. 否则，则由这个祖先元素的`padding box`构成，如果都找不到，则为`inital containing block`
+
+`static`（默认的）/`relative`：简单说就是它的父元素的内容框（即去掉padding的部分）
+
+`absolute`：向上找最近的定位为`absolute/relative`元素
+
+`fixed`：它的`containing block`一律为根元素`html/body`，根元素也是`inital containing block`
