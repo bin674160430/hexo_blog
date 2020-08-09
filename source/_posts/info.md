@@ -76,7 +76,7 @@
 
 职责：改造优化登录页，重构前端项目，独立页面模块目录，支持扫描获取router配置页面信息，配合南航app移动项目组开发交互缓存信息、导航头部、统一登录、重定向、认证、拼音等工具类，根据UI需求设计开发`scroll-view`下拉刷新、`carousel`轮播、`picker`弹出层、`date-picker`日历选择框、输入框、`radio`单选框、`slide-nav`导航菜单、`slip`滑动块、tabs标签、switch开关等组件，编写jsdoc注释生成说明文档
 
-设计技术：react, react-router, react-redux, js-doc, fetch, sass
+设计技术：react, react-router, react-redux, js-doc, fetch, sass 
 
 # 自我介绍
 
