@@ -60,15 +60,15 @@
 
 职责：根据需求设计开发页面，分离国际变更流程、优化表单校验、提供城市、区域码、机场选择、日历、进度条、输入框等组件，提取与app交互工具类；开放简易查询、补充联系人、地址等通用页面和缓存数据交互
 
-涉及技术：react, react-router, redux, antd-mobile, vue, vue-router, vuex, fis3, less, axios, vant，jquery, less, express
+涉及技术：react, react-router, redux, antd-mobile, vue, vue-router, vuex, fis3, less, axios, vant，jquery
 
 ### 2018.01 - 2018.11， 智能机组服务平台、FOC3.0运控数字化放行系统
 
 项目描述：根据机组人员日程安排计划行程单方案，提供人性化的页面展示和交互操作，维护航司各项数据，掌握航班运行数据，通过科学的签派放行，运行监控，航班调配等数据配置应用，系统进行智能决策
 
-职责：构建前端工程，配合产品设计需求开发页面，定义前后端交互协议，开发代码编辑框、分页、树形结构、权限菜单、路由容器、地图坐标选择输入框、星级评价、及时通讯等组件，集成mockjs分离前端调试，编写markdown说明文档
+设计技术：vue, 
 
-设计技术：vue, vue-router, vuex, less, axios, web-socket, remarkdown, element-ui, iview, mint-ui, mockjs
+中文：
 
 ### 2017.06-2017.12, 南航新常客明珠会员
 
