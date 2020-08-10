@@ -563,3 +563,17 @@ body {
 `absolute`：向上找最近的定位为`absolute/relative`元素
 
 `fixed`：它的`containing block`一律为根元素`html/body`，根元素也是`inital containing block`
+
+# css中的visibility属性的collapse值有什么用？在不同的浏览器下有什么区别？
+
+| `visibility`属性值 | 属性值描述                                                   |
+| ------------------ | ------------------------------------------------------------ |
+| visible            | 默认值，元素是可见的                                         |
+| hidden             | 元素不可见，但仍然占用页面空间                               |
+| collapse           | 作用在`table`相关元素，例如`tr, tbody, thead, tfoot`表现得跟`display:none`一样，不可见且不占用空间；如果用在其他元素上，与`hidden`一样 |
+| inherit            | 规定从父元素继承visibility属性的值                           |
+
+在谷歌浏览器里，使用`collapse`和使用`hidden`没有什么区别；在火狐浏览器、Operate和IE11里，使用collapse值的效果就如它的字面意思：`table`的行会消失，下一行会补充它的位置
+
+# [position跟display、margin collapse、overflow、float这些特性相互叠加后会怎么样？](https://www.cnblogs.com/jackyWHJ/p/3756087.html)
+
