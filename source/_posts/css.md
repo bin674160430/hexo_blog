@@ -577,3 +577,69 @@ body {
 
 # [position跟display、margin collapse、overflow、float这些特性相互叠加后会怎么样？](https://www.cnblogs.com/jackyWHJ/p/3756087.html)
 
+可以看做一个类似优先级的机制
+
+`display: none`的时候，`position`, `float`不起作用，在这种情况下，元素不产生框，因此浮动和定位无效
+
+`position`的值是`absolute`, `fixed`，绝对定位下，浮动失效
+
+如果`float`的值不是`none`，那么`display`会被转换，基本上都会转为`block`
+
+`margin collapse`外边距折叠，指的是相邻普通流中的的两个或多个块元素垂直方向上的`margin`会折叠
+
+1). 参与折叠的`margin`都是正值，取其中`margin`较大的值为最终`margin`值
+
+```html
+<div style="height: 50px; margin-bottom: 50px; width: 50px; background-color: red;">A</div>
+<div style="height: 50px; margin-top: 100px; width: 50px; background-color: green;">B</div>
+```
+
+{% image margin-0.png 示例图 %}
+
+2). 参与折叠的`margin`都是负值，取绝对值较大的，反向位移
+
+```html
+<div style="height: 100px; margin-bottom: -75px; width: 100px; background-color: red;">A</div>
+<div style="height: 100px; margin-top: -50px; width: 100px; background-color: green;">B</div>
+```
+
+{% image margin-1.png 示例图 %}
+
+3). 参与的`margin`有正、负值，先取出负`margin`中绝对值最大的，然后，和正`margin`值中最大的`margin`相加
+
+```html
+<div style="height: 50px; margin-bottom: -50px; width: 50px; background-color: red;">A</div>
+<div style="height: 50px; margin-top: 100px; width: 50px; background-color: green;">B</div>
+<!-- margin = 100 + (-50) = 50 -->
+```
+
+{% image margin-2.png 示例图 %}
+
+4). 相邻的`margin`要一起参与计算，不得分布计算
+
+```html
+<div style="margin: 50px 0; background-color: green; width: 50px;">
+    <div style="margin: -60px 0;">
+        <div style="margin: 150px 0;">
+            A
+        </div>
+    </div>
+</div>
+<div style="margin: -100px 0; background-color: green; width: 50px;">
+    <div style="margin: -120px 0;">
+        <div style="margin: 200px 0;">
+            B
+        </div>
+    </div>
+</div>
+<!--
+	A和B之间的margin折叠产生的margin,是6个相邻margin折叠的结果，将margin值分为两组：
+	正值: 50px 150px 200px
+	负值: -60px -100px -120px
+	根据有正负值的计算规则，正值的最大值200px，负值绝对值最大是-120px，最终折叠后的margin应该是200+(-120)=80
+-->
+```
+
+浮动元素、inline-block元素、绝对定位元素的margin不会和垂直方向上的其他元素的margin折叠
+
+创建了块级格式化上下文元素，不和它的子元素发生margin折叠，`overflow: hidden`

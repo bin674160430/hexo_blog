@@ -1,7 +1,3 @@
-
-
-
-
 任务：
 
 ​	1、简历梳理
@@ -70,7 +66,7 @@
 
 项目描述：根据机组人员日程安排计划行程单方案，提供人性化的页面展示和交互操作，维护航司各项数据，掌握航班运行数据，通过科学的签派放行，运行监控，航班调配等数据配置应用，系统进行智能决策
 
-设计技术：vue, 
+涉及技术：vue, vue-router, vuex, less, axios, web-socket, remarkdown, element-ui, iview, mint-ui, mockjs
 
 中文：
 
