@@ -643,3 +643,4 @@ body {
 浮动元素、inline-block元素、绝对定位元素的margin不会和垂直方向上的其他元素的margin折叠
 
 创建了块级格式化上下文元素，不和它的子元素发生margin折叠，`overflow: hidden`
+
