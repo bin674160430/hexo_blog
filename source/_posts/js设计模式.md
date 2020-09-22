@@ -110,7 +110,7 @@ animalSound.makeSound(dog); // 汪
 
 ```javascript
 var myObject = (function() {
-    var __name = 'sven'; // 私有private变量
+    var __name = 'lan'; // 私有private变量
     return {
         getName: function() { // 公开public方法
             return __name;
@@ -118,9 +118,106 @@ var myObject = (function() {
     }
 })()
 
-console.log(myObject.getName()) // sven
+console.log(myObject.getName()) // lan
 console.log(myObject.__name) // undefined
 ```
+
+# this、call、apply
+
+`call(object, ...arguments)`
+
+`apply(object, [...arguments])`
+call 、apply最常见的用于是改变函数内部的`this`指向
+
+## 简单例子：`document.getElementById`这个方法名有点长，我们大概尝试用一个短的函数来代替它，如同`prototype.js`等一些框架所做的事情
+
+```javascript
+<div id="div1">我是一个 div</div>
+
+var getId = document.getElementById;
+getId('div');// 这段代码抛出一个异常，因为许多引擎的document.getElementById方法作为document对象的属性被调用时，方法内部的this确实是指向document的，这里用getId来引用之后就成了普通函数调用，this指向了window，而不是原来的document
+
+// 可以利用apply把document当做this传入getId函数，帮助“修正”this
+document.getElementById = (function(func) {
+    return function() {
+        return func.apply(document, arguments);
+    }
+})(document.getElementById);
+var getId = document.getElementById;
+var div = getId('div1');
+console.log(div.id);// div1
+```
+
+## 借用其它对象的方法
+
+```javascript
+var A = function(name) {
+    this.name = name;
+};
+
+var B = function() {
+    A.apply(this, arguments);
+}
+B.prototype.getName = function() {
+    return this.name;
+}
+
+var b = new B('lan');
+console.log(b.getName()); // lan
+```
+
+
+
+## Function.prototype.bind
+
+大部分浏览器都实现了内置的`Function.prototype.bind`，用来指定函数内部的`this`指向
+
+```javascript
+// 这是一个简化版的bind实现
+Function.prototype.bind = function(context) {
+    var self = this; //保存原函数
+    return function() { // 返回一个新函数
+        return self.apply(context, arguments); // 执行新函数的时候，会把之前传入的context，当作新函数内的this
+    }
+}
+
+var obj = {
+    name: 'lan'
+}
+
+var func = function() {
+    alert(this.name)
+}.bind(obj);
+
+func();
+```
+
+```javascript
+// 通常我们还会把它实现得稍微复杂一点
+Function.prototype.bind = function() {
+    var self = this, // 保存原函数
+        context = [].shift.call(arguments), // 需要绑定的上下文
+        args = [].slice.call(arguments); // 剩余的参数转成数组
+    return function() {
+        // 执行新的函数的时候，会把之前传入的context当做新函数内的this
+        // 并且组合两次分别传入的参数，作为新函数的参数
+        return self.apply(context, [].contact.call(args, [].slice.call(arguments)));
+    }
+};
+
+var obj = {
+    name: 'lan'
+};
+
+var func = function(a, b, c, d) {
+    alert(this.name); // lan
+    alert([a, b, c, d]); // [1,2,3,4]
+}.bind(obj, 1, 2);
+
+func(3, 4);
+```
+
+
 
 # 原型模式和基于原型继承的javascript对象系统
 
@@ -176,16 +273,52 @@ var objectFactory = function() {
 }
 ```
 
-虽然javascript的对象最初都是由Object.prototype对象克隆而来的，但对象构造器的原型不仅限于Object.prototype上，而是可以动态指向其他对象，这样，当对象a需要借用对象b的能力时，可以有选择地把对象a的构造器的原型指向b，从而到达继承的效果
+虽然`javascript`的对象最初都是由`Object.prototype`对象克隆而来的，但对象构造器的原型不仅限于`Object.prototype`上，而是可以动态指向其他对象，这样，当对象a需要借用对象b的能力时，可以有选择地把对象a的构造器的原型指向b，从而到达继承的效果
 
 ```javascript
 // 原型继承方式
-var obj = { name: 'sven' };
+var obj = { name: 'lan' };
 
 var A = function() {};
 A.prototype = obj;
 
 var a = new A();
-console.log(a.name); // sven
+console.log(a.name); // lan
 ```
 
+# 闭包
+
+## 变量的作用域
+
+在函数中声明变量，如果该变量前面没有带上关键字`var`，这个变量就会成为全局变量，这当然是一种容易造成命名冲突的作法；另外一种情况是用`var`关键字在函数中声明变量，这时候的变量是局部变量，只有在该函数内部才能访问到这个变量
+
+```javascript
+var func = function() {
+    var a = 1;
+    alert(a); // 1
+}
+
+func();
+alert(a); // Uncaught ReferenceError: a is not defined
+```
+
+变量的搜索是从内到外的，搜索的过程随着代码执行环境创建的作用域往外逐层搜索，一直搜索到全局对象为止，一下例子说明
+
+```javascript
+var a = 1;
+
+var func1 = function() {
+    var b = 2;
+    var func2 = function() {
+        var c = 3;
+        console.log(b); // 2
+        console.log(a); // 1
+    }
+    func2();
+    console.log(c); // Uncaught ReferenceError: c is not defined
+}
+
+func1();
+```
+
+## 变量的生命周期
