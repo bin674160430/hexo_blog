@@ -7,6 +7,8 @@ tags:
     - javascript
 ---
 
+附属链接：[javascript基础](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/A_re-introduction_to_JavaScript)
+
 # == 和 === 的区别
 
 `===`为等同符，等号两边类型、值相同返回`true`，等号两边值类型不同或者值不同直接返回`false`
