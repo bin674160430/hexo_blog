@@ -402,3 +402,82 @@ Type.isString(''); // true
 ## 闭包的更多作用
 
 ### 变量封装
+
+闭包可以帮助把一些不需要暴露在全局的变量封装成“私有变量”
+
+```javascript
+// 假设一个计算乘积的简单函数
+var mult = function() {
+    var a = 1;
+    for (var i = 0, l = arguments.length; i < l; i++) {
+        a = a*arguments[i];
+    }
+    return a;
+}
+
+// mult函数接受一些number类型的参数，并返回这些参数的乘积，现在我觉得对于那些相同的参数来说，每次都进行计算是一种浪费，可以加入缓存机制，并升级一下这个函数的性能
+var mult = (function() {
+    var cache = {};
+    return function() {
+        var args = Array.prototype.join.call(arguments, ',');
+        if (args in cache) {
+            return cache[args];
+        }
+        var a = 1;
+        for (var i = 0, l = arguments.length; i < l; i++) {
+            a = a * arguments[i];
+        }
+        return cache[args] = a;
+    }
+})();
+```
+
+提炼函数式代码重构中的一种常见技巧，如果在一个大函数中有一些代码能够独立出来，我们常常把这些代码块封装在独立的小函数里面。独立出来的小函数有助于代码复用，如果这些小函数有一个良好的命名，它们本身也起到了注释的作用。如果这些小函数不需要在程序的其他地方使用，最好是把它们用闭包封闭起来
+
+```javascript
+var mult = (function() {
+    var cache = {};
+    var calculate = function() { // 封闭calculate函数
+        var a = 1;
+        for (var i = 0, l = arguments.length; i < l; i++) {
+            a = a * arguments[i];
+        }
+        return a;
+    };
+    
+    return function() {
+        var args = Array.prototype.join.call(arguments, ',');
+        if (args in cache) {
+            return cache[args];
+        }
+        return cache[args] = calculate.apply(null, arguments);
+    }
+})();
+```
+
+### 延续局部变量的寿命
+
+`img`对象经常用于进行数据上报，如下所示:
+
+```javascript
+var report = function(src) {
+    var img = new Image();
+    img.src = src;
+}
+
+report('http://xxx');
+//通过查询后台的记录得知，因为一些低版本的浏览器的实现存在bug，使用report函数进行数据上报会丢失30%左右的数据，也就是说report函数并不是每次都成功发起http请求；丢失数据的原因是img是report函数中的局部变量，当report函数执行完毕后，img局部变量随着被销毁，而这个时候可能还没来记得发出http请求，所以这次请求就会丢失掉
+
+
+// 把img变量闭包封闭起来，解决请求丢失问题
+var report = (function() {
+    var imgs = [];
+    return function(src) {
+        var img = new Image();
+        imgs.push(img);
+        img.src = src;
+    }
+})();
+```
+
+### 闭包和面向对象设计
