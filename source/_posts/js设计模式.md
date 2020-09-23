@@ -1,6 +1,6 @@
 ---
 title: javascript 设计模式
-date: 2020-07-16 20:20:00
+date: 2020-09-23 14:28:00
 categories:
     - js
 tags:
@@ -322,3 +322,83 @@ func1();
 ```
 
 ## 变量的生命周期
+
+全局变量的生命周期是永久的，除非主动去销毁这个变量。
+
+函数内`var`关键字声明的局部变量，当退出函数时，这些局部变量失去价值，随着函数的结束而被销毁。
+
+```javascript
+var func = function() {
+    var a = 1; // 退出函数后局部变量a将被销毁
+    console.log(a);
+}
+func();
+```
+
+```javascript
+var func = function() {
+	var a = 1;
+    return function() {
+        a++;
+        console.log(a);
+    }
+}
+
+var f = func();
+f(); //2
+f(); //3
+f(); //4
+
+// 当退出函数后，局部变量a没有消失，而是一直在某个地方存活着，这是因为当执行var f = func(), f返回了一个匿名函数的引用，它可以访问到func()被调用时产生的环境，而局部变量a一直处于这个环境里；既然局部变量所在的环境还能被外界访问，说明这个变量就有了不被销毁的理由，在这个地方产生了一个闭包结构，局部变量看起来被延续了。
+```
+
+下面介绍一个闭包的经典应用
+
+```html
+<html>
+    <body>
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+        <div>5</div>
+    </body>
+</html>
+<script>
+	var nodes = document.getElementByTagName('div');
+    for(var i = 0, len = nodes.length; i < len; i++) {
+        nodes[i].onclick = function() {
+            console.log(i);
+        }
+    }
+    // 无论点击哪个div，最后都是输出5，因为div的onclick事件是异步触发的，当事件触发的时候，for早就结束，i值已经是5，所以顺着作用域从内往外找i的值总是5
+    // 解决方法在闭包的帮助下，把i值封闭起来，当事件函数顺着作用域链从内往外找i，会先找到被封闭在闭包环境中的i
+    for(var i = 0, len = nodes.length; i < len; i++) {
+        (function(i) {
+            nodes[i].onclick = function() {
+                console.log(i);
+            }
+        })(i)
+    }
+</script>
+```
+
+```javascript
+// 同样地编写如下一段代码：
+var Type = {};
+
+for(var i = 0, type; type = ['String', 'Array', 'Number'][i++];) {
+    (function(type){
+        Type['is' + type] = function(obj) {
+            return Object.prototype.toString.call(obj) === '[object' + type + ']';
+        }
+    })(type)
+}
+
+Type.isArray([]); // true
+Type.isString(''); // true
+```
+
+## 闭包的更多作用
+
+### 变量封装
