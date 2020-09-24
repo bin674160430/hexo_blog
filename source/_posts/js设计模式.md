@@ -621,3 +621,44 @@ setCommand(createCommand(LOL));
 ​	在IE浏览器中，由于`BOM`和`DOM`中的对象是使用`C++`以`DOM`对象的形式实现的，而`COM`对象的方式实现，而DOM对象的垃圾收集机制采用的是引用计数策略。在基于引用计数策略的垃圾回收机制中，如果两个对象之间形成了循环引用，那么这两个对象都无法被回收，但循环引用造成的内存泄露在本质上也不是闭包造成的。
 
 ​	同样，如果要解决循环引用带来的内存泄露问题，我们只需要把循环引用中的变量设为`null`即可。将变量设置为`null`意味着切断变量与它之前引用的值之间的连接，当垃圾收集器下次运行时，将会删除这些值并回收它们占用的内存。
+
+# 高阶函数
+
+高阶函数是指至少满足下列条件之一的函数
+
+- 函数作为参数被传递
+- 函数作为返回值输出
+
+## 回调函数
+
+```javascript
+var getUserInfo = function(userId, callback) {
+    $.ajax('http://xxx?' + userId, function(data) {
+        if(typeof callback === 'function') {
+            callback(data);
+        }
+    });
+}
+
+getUserInfo(13157, function(data) {
+    console.log(data.userName);
+});
+// 回调函数的应用不仅只是在异步请求中，当一个函数不适合执行一些请求时，可以把这些请求封装成一个函数，并把它作为参数传递给另外一个函数，“委托”给另外一个函数来执行
+
+var appendDiv = function(callback) {
+    for(var i = 0; i < 100; i++) {
+        var div = document.createElemnt('div');
+        div.innerHTML = i;
+        document.body.appendChild(div);
+        if (typeof callback === 'function') {
+            callback(div);
+        }
+    }
+};
+
+appendDiv(function(node) {
+    node.style.display = 'none';
+});
+// 隐藏节点的请求实际上是由客户发起，但是客户并不知道节点什么时候会创建好，于是把隐藏节点的逻辑放在回调函数中，“委托”给appendDiv方法，appendDiv方法当然知道节点什么时候创建好，所以在节点创建好的时候，appendDiv会执行之前客户传入的回调函数
+```
+
