@@ -481,3 +481,143 @@ var report = (function() {
 ```
 
 ### 闭包和面向对象设计
+
+过程和数据的结合是形容面向对象中“对象”时常使用的表达。对象以方法的形式包含了过程，而闭包则是在过程中以环境的形式包含了数据，通常用面向对象思想能实现的功能，用闭包也能实现
+
+```javascript
+// 闭包的方式
+var extent = function() {
+    var value = 0;
+    return {
+        call: function() {
+            value++;
+            console.log(value);
+        }
+    }
+};
+
+var extent = extent();
+extent.call(); // 1
+extent.call(); // 2
+extent.call(); // 3
+
+// 面向对象
+var extent = {
+    value: 0,
+    call: function() {
+        this.value++;
+        console.log(this.value);
+    }
+}
+extent.call(); // 1
+extent.call(); // 2
+extent.call(); // 3
+
+var Extent = function() {
+    this.value = 0;
+}
+Extent.prototype.call = function() {
+    this.value++;
+    console.log(this.value);
+}
+var extent = new Extent();
+extent.call(); // 1
+extent.call(); // 2
+extent.call(); // 3
+```
+
+### 用闭包实现命令模式
+
+```html
+<html>
+    <body>
+        <button id="execude">命令：打开lol客户端</button>
+        <button id="undo">命令：关闭lol客户端</button>
+    </body>
+</html>
+<script>
+	var LOL = {
+        open: function() {
+            console.log('打开LOL');
+        },
+        close: function() {
+            console.log('关闭LOL');
+        }
+    };
+    
+    var OpenLolCommand = function(receiver) {
+        this.receiver = receiver;
+    };
+    
+    OpenLolCommand.prototype.execude = function() {
+        this.receiver.open();
+    };
+    
+    OpenLolCommand.prototype.undo = function() {
+        this.receiver.close();
+    };
+    
+    var setCommand = function(command) {
+        document.getElementById('execude').onclick = function() {
+            command.execude(); // 打开LOL
+        }
+        document.getElementById('undo').onclick = function() {
+            command.undo(); // 关闭LOL
+        }
+    };
+    
+    setCommand(new OpenLolCommand(LOL));
+</script>
+```
+
+命令模式的意图是把请求封装为对象，从而分离请求的发起者和请求的接收者（执行者）之间的耦合关系，在命令执行之前，可以预先往命令对象中植入命令的接收者
+
+但在`javascript`中，函数作为一等对象，本身就可以四处传递，用函数对象而不是普通对象来封装请求显得更加简单自然。在面向对象版本的命令模式中，预先植入的命令接收者被当成对象的属性保存起来；而在闭包版本的命令模式中，命令接受者会被封闭在闭包形成的环境中
+
+```javascript
+var LOL = {
+    open: function() {
+    	console.log('打开LOL');  
+    },
+    close: function() {
+        console.log('关闭LOL');
+    }
+};
+
+var createCommand = function(receiver) {
+    
+    var execute = function() {
+        receiver.open();
+    }
+    
+    var undo = function() {
+        receiver.close();
+    }
+    
+    return {
+        execute: execute,
+        undo: undo
+    }
+    
+}
+
+var setCommand = function(command) {
+    document.getElementById('execute').onclick = function() {
+        command.execute();
+    };
+    document.getElementById('undo').onclick = function() {
+        command.undo();
+    }
+};
+
+setCommand(createCommand(LOL));
+```
+
+# 闭包与内存管理
+
+​	闭包是一个非常大的特性，但是内存泄露的问题一直在强调，所以要减少闭包的使用。这其实是一个误解，局部变量本来应该在函数退出的时候被解除引用，但如果局部变量被封闭在闭包形成的环境中，那么这个变量将一直生存下去，从这个意义上看，闭包的确会使一些数据无法被及时销毁。使用闭包的一部分原因是我们主动选择把一些变量封闭在闭包中，因为可能在以后还需要使用这些变量，把这些变量放在闭包中和放在全局作用域，对内存方面的影响是一致的，这里并不能说成内存泄露。如果在将来需要回收这些变量，可以手动把变量设置为`null`
+
+​	根闭包和内存泄露有关系的地方是，使用闭包的同时比较容易形成循环引用，如果闭包的作用于保存一些`DOM`节点，这时候可能造成内存泄露，但这本身不是闭包的问题，也不是`javascript`的问题。
+​	在IE浏览器中，由于`BOM`和`DOM`中的对象是使用`C++`以`DOM`对象的形式实现的，而`COM`对象的方式实现，而DOM对象的垃圾收集机制采用的是引用计数策略。在基于引用计数策略的垃圾回收机制中，如果两个对象之间形成了循环引用，那么这两个对象都无法被回收，但循环引用造成的内存泄露在本质上也不是闭包造成的。
+
+​	同样，如果要解决循环引用带来的内存泄露问题，我们只需要把循环引用中的变量设为`null`即可。将变量设置为`null`意味着切断变量与它之前引用的值之间的连接，当垃圾收集器下次运行时，将会删除这些值并回收它们占用的内存。
