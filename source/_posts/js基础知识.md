@@ -1,5 +1,5 @@
 ---
-title: javascript 设计模式
+title: javascript 基础知识
 date: 2020-09-23 14:28:00
 categories:
     - js
@@ -660,5 +660,111 @@ appendDiv(function(node) {
     node.style.display = 'none';
 });
 // 隐藏节点的请求实际上是由客户发起，但是客户并不知道节点什么时候会创建好，于是把隐藏节点的逻辑放在回调函数中，“委托”给appendDiv方法，appendDiv方法当然知道节点什么时候创建好，所以在节点创建好的时候，appendDiv会执行之前客户传入的回调函数
+
+
+// Array.prototype.sort的目的是对数组元素进行排序，这是不变的部分，具体用什么规则排序，是可变的部分，把可变的部分分装在函数参数里，动态传入Array.prototype.sort，使Array.prototype.sort方法成为一个非常灵活的方法
+
+// 从小到大, [1,3,4]
+[1,4,3].sort(function(a, b) {
+    return a - b;
+});
+
+// 从大到小, [4,3,1]
+[1,4,3].sort(function(a, b) {
+    return b - a;
+});
 ```
+
+## 函数作为返回值输出
+
+相比把函数当做参数传递，函数当做返回值输出的应用场景更多，也更能体现函数式编程的巧妙。让函数继续返回一个可执行的函数，意味着运算过程是可延续的。
+
+```javascript
+// 判断一个数据是否是数组，在以往的实现中，如果基于鸭子模型的概念来判断，就是判断这个数据有没有length属性，有没有sort或者slice方法等。但是更好的方式是用Object.prototype.toString返回的字符串来计算
+
+var isType = function(type) {
+    return function(obj) {
+        return Object.prototype.toString.call(obj) === '[object ' + type + ']';
+    }
+};
+
+var isString = isType('String');
+var isArray = isType('Array');
+var isNumber = isType('Number');
+
+console.log(isArray([1,2,3])); // true
+
+// 还可以利用循环，来批量注册这些isType函数
+var Type = {};
+
+for(var i = 0, type; type = ['String', 'Array', 'Number'][i++]; ) {
+    (function(type) {
+        Type['is' + type] = function(obj) {
+            return Object.prototype.toString.call(obj) === '[object' + type + ']';
+        }
+    })(type)
+};
+
+Type.isArray([]); // true
+Type.isString(''); // true
+
+
+// 单例模式demo
+var getSingle = function(fn) {
+    var ret;
+    return function() {
+        return ret || (ret = fn.apply(this, arguments));
+    }
+};
+
+var getScript = getSingle(function() {
+    return document.createElement('script');
+});
+
+var script1 = getScript();
+var script2 = getScript();
+console.log(script1 === script2); // true
+```
+
+# 高阶函数实现AOP
+
+`AOP`（面向切面编程）的主要作用是把一些跟核心业务逻辑模块无关的功能抽取出来，这些业务逻辑无关的功能通常包括日志统计、安全控制、异常处理等。把这些功能抽离出来之后，再通过"动态织入"的方式参入业务逻辑模块中。这样做的好处首先是保持业务逻辑模块的纯净和高内聚性，其次是可以很方便地复用日志统计等功能模块。
+
+在`javascript`中实现`AOP`，都是把一个函数"动态织入"到另外一个函数中，例如
+
+```javascript
+Function.prototype.before = function(beforefn) {
+    var __self = this; // 保存原函数的引用
+    return function() { // 保存包含了原函数和新函数的“代理”函数
+        beforefn.apply(this, arguments); // 执行新函数，修正this
+        return __self.apply(this, arguments); // 执行原函数
+    }
+};
+
+Function.prototype.after = function(afterfn) {
+    var __self = this;
+    return function() {
+        var ret = __selft.apply(this, arguments);
+        afterfn.apply(this, arguments);
+        return ret;
+    }
+};
+
+var func = function() {
+    console.log('func');
+};
+
+func = func.before(function() {
+    console.log('before');
+}).after(function() {
+    console.log('after');
+});
+
+func();
+// before
+// func
+// after
+```
+
+
 
