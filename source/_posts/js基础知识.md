@@ -766,5 +766,87 @@ func();
 // after
 ```
 
+# 高阶函数的其它应用
 
+## currying 函数柯里化，部分求值
+
+一个`currying`函数首先会接收一些参数，该函数并不会立即求值，而是继续返回另外一个函数，刚才传入的参数在函数形成的闭包中被保存起来。等待函数被真正需要求值的时候，之前传入的所有参数都会一次性用于求值。
+
+例如：编写一个计算每月开销的函数。
+
+> 1. 记录每天花费多少钱
+>
+>    ```javascript
+>    var monthlyCost = 0;
+>    
+>    var cost = function(money) {
+>        monthlyCost += money;
+>    };
+>    
+>    cost(100); // 第一天100
+>    cost(200); // 第二天200
+>    cost(300); // 第三天300
+>    console.log(monthlyCost); //三天花费600
+>    ```
+>
+> 2. 上面代码可以看到，每天结束后都会记录并计算到今天为止花掉的钱，但事实上并不需要关心每天花掉多少钱，而只想知道月底一共花费了多少钱，实际上只要在月底计算一次
+>
+>    ```javascript
+>    var cost = (function() {
+>        var args = [];
+>        return function() {
+>            if(arguments.length === 0) {
+>                var money = 0;
+>                for (var i = 0, l = args.length; i < l; i++) {
+>                    money += args[i];
+>                }
+>                return money;
+>            } else {
+>                [].push.apply(args, arguments);
+>            }
+>        }
+>    })();
+>    
+>    cost(100); // 未真正求值
+>    cost(200); // 未真正求值
+>    cost(300); // 未真正求值
+>    cost(); // 求值: 600
+>    ```
+>
+> 3. 再改进一下，编写一个通用的`currying`函数
+>
+>    ```javascript
+>    // 接受并处理参数
+>    var currying = function(fn) {
+>        var args = [];
+>        return function() {
+>            if (arguments.length === 0) {
+>                return fn.apply(this, args);
+>            } else {
+>                [].push.apply(args, arguments);
+>                return arguments.callee;
+>            }
+>        }
+>    }
+>    
+>    // 计算总额
+>    var costFn = (function() {
+>        var money = 0;
+>        return function() {
+>            for (var i = 0, l = arguments.length; i < l; i++) {
+>                money += arguments[i];
+>            }
+>            return money;
+>        }
+>    })();
+>    
+>    var cost = currying(costFn); // 转换成currying函数
+>    cost(100);
+>    cost(200);
+>    cost(300);
+>    cost(); // 600
+>    ```
+>
+
+## uncurrying
 
