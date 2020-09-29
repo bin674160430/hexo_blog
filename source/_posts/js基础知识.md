@@ -854,11 +854,170 @@ func();
 
 ```javascript
 Function.prototype.uncurrying = function() {
-    var self = this;
+    var self = this; // 当前函数
     return function() {
-        var obj = Array.prototype.shilft.call(arguments);
-        return self.apply(obj, arguments);
+        var obj = Array.prototype.shilft.call(arguments); // 取第一个元素
+        return self.apply(obj, arguments); // 执行函数和参数
     }
 }
+
+// 通过uncurrying的方式，把Array.prototype.push.call变成一个通用的push函数
+var push = Array.prototype.push.uncurrying();
+(function() {
+    push(arguments, 4);
+    console.log(arguments); // [1,2,3,4]
+})(1,2,3);
+
+// 同样，一次性地把Array.prototype上的方法"复制"到array对象上
+for(var i = 0, fn, ary = ['push', 'shift', 'forEach']; fn = ary[i++];) {
+    Array[fn] = Array.prototype[fn].uncurrying();
+}
+
+// 现在给出uncurrying另外一种实现方式
+Function.prototype.uncurrying = function() {
+    var self = this;
+    return function() {
+        return Function.prototype.call.apply(self, arguments);
+    }
+}
+```
+
+## 函数节流
+
+在有些场景下，函数可能被很频繁地调用，而造成大的性能问题，比如
+1、当浏览器窗口大小被拖动而改变的时候，`window.onresize`事件触发频率很高，有一些跟`DOM`节点相关的操作，而跟`DOM`节点相关的操作往往是非常消耗性能的，这时候浏览器可能就会吃不消造成卡顿现象
+2、拖拽元素节点`mousemove`
+3、上传进度，浏览器插件在真正开始上传文件之前，会对文件进行扫描并随时通知`javascript`函数，以便在页面中显示当前的扫描进度，通知的频率非常高，大约一秒钟10次
+4、输入框onkeyup, input, onkeydown
+
+以上三个场景，共同问题是函数被触发的频率太高，事实上可以不需要那么每次都处理，只需要处理有效的次数即可，这里就需要用到函数节流了，下面`throttle`函数的原理是，将准备被执行的函数用`setTimeout`延迟一段时间执行，如果该次延迟执行还没有完成，则忽略接下来调用该函数的请求。
+
+```javascript
+var throttle = function(fn, interval) {
+    
+    var __self = fn, // 保存需要被延迟执行的函数引用
+        timer, // 定时器
+        firstTime = true; // 是否第一次调用
+    
+    return function() {
+        var args = arguments,
+            __me = this;
+        
+        if(firstTime) { // 如果是第一次调用，不需延迟执行
+            __self.apply(__me, args);
+            return firstTime = false;
+        }
+        
+        if(timer) { // 如果定时器还在，说明前一次延迟还没有完成
+            return false;
+        }
+        
+        timer = setTimeout(function() { // 延迟一段时间执行
+            clearTimeout(timer);
+            timer = null;
+            __self.apply(__me, args);
+        }, interval || 500);
+        
+    }
+    
+};
+window.onresize = throttle(function() {
+    console.log(1);
+}, 500);
+```
+
+## 分时函数
+
+同时往页面添加大量DOM节点显然会让浏览器吃不消，往往就是浏览器卡顿，解决方案就是让将创建节点的工作分批进行，例如把1秒钟创建1000个节点，改为每隔200毫秒创建8个节点
+
+```javascript
+var timeChunk = function(ary, fn, count) {
+    
+    var obj,
+        t;
+    
+    var len = ary.length;
+    
+    var start = function() {
+        for(var i = 0; i < Math.min(count || 1, ary.length); i++) {
+            var obj = ary.shift();
+            fn(obj);
+        }
+    };
+    
+    return function() {
+        t = setInterval(function() {
+            if(ary.length === 0) { // 如果全部节点都已经被创建好
+                return clearInterval(t);
+            }
+            start();
+        }, 200); // 分批执行的时间间隔，也可以用参数的形式传入
+    };
+    
+};
+
+var ary = [];
+for(var i = 1; i <= 1000; i++) {
+    ary.push(i);
+}
+
+var renderFriendList = timeChunk(ary, function(n) {
+    var div = document.createElement('div');
+    div.innerHTML = n;
+    document.body.appendChild(div);
+}, 8);
+
+renderFriendList();
+```
+
+## 惰性加载函数
+
+在web开发中，因为浏览器之间的差异，需要做兼容，比如个个浏览器中能工通用的时间绑定函数`addEvent`
+
+```javascript
+// 缺点：每次调用的时候都会执行里面的if分支，虽然开销不大，但也许有一些方法可以让程序避免这些重复的执行过程
+var addEvent = function(elem, type, handler) {
+    if (window.addEventListener) {
+        return elem.addEventListener(type, handler, false);
+    }
+    if (window.attachEvent) {
+        return elem.attachEvent('on' + type, handler);
+    }
+};
+
+// 在代码加载的时候立刻进行一次判断，让addEvent返回一个包裹了正确逻辑的函数；
+// 缺点：从头到尾都没用使用过addEvent函数，这样看来，前一次的浏览器嗅探是完全多余的操作，而且这也会稍稍延长页面ready时间
+var addEvent = (function() {
+    if(window.addEventListener) {
+        return function(elem, type, handler) {
+            elem.addEventListener(type, handler, false);
+        }
+    }
+    if(window.attachEvent) {
+        return function(elem, type, handler) {
+            elem.attachEvent('on' + type, handler);
+        }
+    }
+})();
+
+// 惰性载入函数方案，addEvent被声明为一个普通函数，函数里也有分支判断，但在第一次进入条件分支之后，函数内部会重写这个函数，重写之后的函数就是我们期待的addEvent函数，在下一次进入addEvent函数的时候，addEvent已经不再存在条件分支语句
+var addEvent = function(elem, type, handler) {
+    if (window.addEventListener) {
+        addEvent = function(elem, type, handler) {
+            elem.addEventListener(type, handler, false);
+        }
+    } else if (window.attachEvent) {
+        addEvent = function(elem, type, handler) {
+            elem.attachEvent('on' + type, handler);
+        }
+    }
+    
+    addEvent(elem, type, handler);
+};
+
+var div = document.getElementById('div');
+addEvent(div, 'click', function() {
+    console.log(1);
+});
 ```
 
