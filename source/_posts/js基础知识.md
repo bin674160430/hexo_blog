@@ -850,3 +850,15 @@ func();
 
 ## uncurrying
 
+把泛化`this`的过程提取出来
+
+```javascript
+Function.prototype.uncurrying = function() {
+    var self = this;
+    return function() {
+        var obj = Array.prototype.shilft.call(arguments);
+        return self.apply(obj, arguments);
+    }
+}
+```
+
