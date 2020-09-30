@@ -81,6 +81,7 @@ function heroPos(pos) {
     }
 }
 
+// 遍历对象
 function heroPos(pos) {
     const posObj = {
         adc: ['EZ', 'VN'],
@@ -88,4 +89,38 @@ function heroPos(pos) {
     };
     return posObj[pos] || [];
 }
+
+// 遍历map
+function heroPos(pos) {
+    const posMap = new Map()
+    	.set('adc', ['EZ', 'VN'])
+    	.set('bravo', ['劫', '泰隆']);
+    return posMap.get(pos) || [];
+}
 ```
+
+# 对所有/部分判断使用
+
+```javascript
+const heroList = [
+    { name: '泰隆', pos: 'bravo' },
+    { name: 'EZ', pos: 'adc' }
+];
+
+// 所有的英雄都是 bravo 刺客
+function test() {
+    // 代码有点长
+    let allHeroIsBravo = false;
+    for (let hero of heroList) {
+        if (allHeroIsBravo) break;
+        allHeroIsBravo = (hero.pos === 'bravo');
+    }
+    return allHeroIsBravo; // false
+}
+
+const allHeroIsBravo = heroList.every(hero => hero.pos === 'bravo'); // false
+
+// 同样，是否存在 bravo 刺客
+const hasBravoHero = heroList.some(hero => hero.pos === 'bravo'); // true
+```
+
