@@ -166,3 +166,36 @@ var heroBouns = function(keyword, output) {
 </script>
 ```
 
+# 代理模式
+
+代理模式是为一个对象提供一个代用品或占位符，以便控制对它的访问
+
+## 虚拟代理实现图片预加载
+
+在web开发中，图片预加载是一种常用的技术，如果直接给某个`img`节点设置`src`属性，由于图片过大或者网络不佳，图片的位置往往有段时间会是一片空白，常见的做法是先用一张`loading`图片占位，然后用异步的方式加载图片，等图片加载好了再把它填充到`img`节点
+
+```javascript
+var myImage = (function() {
+  var imgNode = document.createElement('div');
+  document.body.appendChild(imgNode);
+  return function(src) {
+    imgNode.src = src;
+  }
+})();
+
+var proxyImage = (function() {
+  var img = new Image;
+  img.onload = function() {
+    myImage(this.src);
+  }
+  return function(src) {
+    myImage('file:// /C:/Users/loading.gif');
+    img.src = src;
+  }
+})();
+
+proxyImage('http://xxx.jpg');
+```
+
+
+
