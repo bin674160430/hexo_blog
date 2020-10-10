@@ -442,4 +442,422 @@ var uploadObj = iteratorUploadObj(getActiveUploadObj, getFlashUploadObj, getForm
 
 # 发布——订阅模式（观察者模式）
 
-定义对象之间的一种一对多的依赖关系，当一个对象的形状发生改变时，所有依赖它的对象都将得到通知
+定义对象之间的一种一对多的依赖关系，当一个对象的形状发生改变时，所有依赖它的对象都将得到通知，如最常用的`DOM`事件机制`addEventListener`
+
+优点：时间上的解耦、对象之间的解耦
+
+缺点：消耗一定的时间和内存，当订阅一个消息后，也许消息最后都没有发生，但这个订阅者会始终存在于内存中；弱化对象之间的联系，导致程序难以维护和理解，特别是多个发布者和订阅者嵌套到一起的时候，要跟中一个bug不是件轻松的事情
+
+实现发布——订阅，售楼处与客户的房源信息通知
+
+- 指定好谁充当发布者（比如售楼处）
+
+- 然后给发布者添加一个缓存列表，用于存放回调函数以便通知订阅者（售楼处的花名册）
+
+- 最后发布消息的时候，发布者会遍历这个缓存列表，依次触发存放的订阅者回调函数（遍历花名册，挨个发短信）
+
+- ```javascript
+  var salesOffices = {}; // 定义售楼处
+  salesOffices.clientList = []; // 缓存列表，存放订阅者的回调函数
+  salesOffices.listen = function(fn) { // 添加订阅者
+      this.clientList.push(fn); // 订阅的消息添加进缓存列表
+  };
+  salesOffices.trigger = function() {
+      for(var i = 0, fn; fn = this.clinentList[i++];) {
+          fn.apply(this, arguments);
+      }
+  };
+  
+  // 小明订阅消息
+  salesOffices.listen(function(price, squareMeter) {
+      console.log('价格= ' + price);
+      console.log('面积= ' + squareMeter);
+  });
+  // 小红订阅消息
+  salesOffices.listen(function(price, squareMeter) {
+      console.log('价格= ' + price);
+      console.log('面积= ' + squareMeter);
+  });
+  salesOffices.trigger(20000000, 88);
+  salesOffices.trigger(30000000, 110);
+  ```
+
+- 上面实现了一个简单的发布-订阅模式，还存在一些问题，订阅者接收到发布者发布的每个消息，假如小明只想买88方的房，而发布者把110方的消息也推送给了小明，这将造成不必要的资源浪费和困扰小明，所以有必要增加一个key，让订阅者只订阅自己感兴趣的信息
+
+- ```javascript
+  var salesOffices = {};
+  salesOffices.clientList = {};
+  salesOffices.listen = function(key, fn) {
+      if (!this.clientList[key]) {
+          this.clientList[key] = [];
+      }
+      this.chilentList[key].push(fn);
+  };
+  salesOffices.trigger = function() {
+      var key = Array.prototype.shift.call(arguments),
+          fns = this.clientList[key];
+      if (!fns || fns.length === 0) {
+          return false;
+      }
+      for(var i = 0, fn; fn = fns[i++];) {
+          fn.apply(this, arguments);
+      }
+  };
+  
+  salesOffices.listen('squareMeter88', function(price) {
+      console.log('价格= ' + price);
+  });
+  
+  salesOffices.listen('squareMeter110', function(price) {
+      console.log('价格= ' + price);
+  });
+  
+  salesOffices.trigger('squareMeter88', 2000000); // 发布88方的房子价格
+  salesOffices.trigger('squareMeter110', 30000000); // 发布110方的房子价格
+  ```
+
+## 发布-订阅模式通用实现
+
+```javascript
+// 提取发布——订阅功能
+var event = {
+    clientList: {},
+    // 添加订阅事件
+    listen: function(key, fn) {
+        if (!this.clientList[key]) {
+            this.clientList[key] = [];
+        }
+        this.clientList[key].push(fn);s
+    },
+    // 取消订阅
+    remove: function(key, fn) {
+        var fns = this.clientList[key];
+        if (!fns) {
+            return false;
+        }
+        if (!fn) { // 如果没有传入具体的函数，需要取消key对应消息的所有订阅
+            fns && (fns.length = 0);
+        } else {
+            for(var l = fns.length - 1; l >= 0; l--) {
+                var _fn = fns[l];
+                if (_fn === fn) {
+                    fns.splice(l, 1); // 删除订阅者的回调函数
+                }
+            }
+        }
+    },
+    trigger: function() {
+        var key = Array.prototype.shift.call(arguments),
+            fns = this.clientList[key];
+        for(var i = 0, fn; fn = fns[i++];) {
+            fn.apply(this, arguments);
+        }
+    }
+};
+// 定义动态安装发布——订阅功能
+var installEvent = function(obj) {
+    for(var key in event) {
+        obj[key] = event[key];
+    }
+};
+
+// 给售楼对象salesOffices动态增加发布——订阅功能
+var salesOffices = {};
+installEvent(salesOffices);
+salesOffices.listen('squareMeter88', function(price) {
+    console.log(price);
+});
+salesOffices.trigger('squareMeter88', 2000000);
+```
+
+## 网站登录案例
+
+假如正在开发一个商城网站，有header头部、nav导航、消息列表、购物车等模块，这几个模块的渲染有一个共同的前提条件，必须先用ajax异步请求获取用户的登录后返回的信息，而且将来还有哪些模块也需要使用这些用户信息，如果它们和用户信息模块产生了强耦合，如下代码
+
+```javascript
+login.succ(function() {
+    header.setAvatar(data.avatar);
+    nav.setAvatar(data.avatar);
+    message.refresh();
+    cart.refresh();
+});
+```
+
+等到有一天，项目中又新增了一个收货地址管理的模块，需要在登录之后刷新收货地址列表，于是翻开了之前写的登录模块，加上这段代码
+
+```javascript
+login.succ(function() {
+    header.setAvatar(data.avatar);
+    nav.setAvatar(data.avatar);
+    message.refresh();
+    cart.refresh();
+    address.refresh(); // 增加刷新收货地址
+});
+```
+
+将会越来越疲于应付这些突如起来的业务需求
+
+用发布——订阅模式重写，对用户信息感兴趣的业务模块将自行订阅登录成功的消息事件，当登录成功时，登录模块只需要发布登录成功的消息，而业务方接受消息之后，就会开始进行各自的业务处理，登录模块并不关系业务方究竟要做什么，也不想去了解它们的内部细节
+
+```javascript
+$.ajax('http://xxx.com/login', function(data) {
+    login.trigger('loginSucc', data);
+});
+
+// 各模块监听登录成功的消息
+var header = (function() {
+    login.listen('loginSucc', function(data) {
+        header.setAvatar(data.avatar);
+    });
+    return {
+        setAvatar: function(data) {
+            console.log('设置header模块头像');
+        }
+    }
+})();
+
+var nav = (function() {
+    login.listen('loginSucc', function(data) {
+        nav.setAvatar(data.avatar);
+    });
+    return {
+        setAvatar: function(avatar) {
+            console.log('设置nav模块头像');
+        }
+    }
+})();
+```
+
+## 全局的发布——订阅对象
+
+前面实现的发布-订阅模式，存在两个小问题
+
+- 每个发布者对象都添加了`listen`和`trigger`方法，以及一个缓存列表`clientList`，这其实是一种资源浪费
+- 还存在一定的耦合性，客户至少要知道售楼处对象的名字是`salesOffices`，才能顺利的订阅到事件，如果房源信息来自多个房产公司，那么客户得去订阅多个房产发布者消息，实际上客户是不用关系消息来自哪个房产发布者，在意的是能否顺利收到消息，只需要把订阅的请求交给中介，订阅者和发布者都必须要知道这个中介公司
+
+```javascript
+var Event = (function() {
+    
+    var clientList = {},
+        listen,
+        trigger,
+        remove;
+    
+    listen = function(key, fn) {
+        if (!clientList[key]) {
+            clientList[key] = [];
+        }
+        clientList[key].push(fn);
+    };
+    
+    trigger = function() {
+        var key = Array.prototype.shift.call(arguments),
+            fns = clientList[key];
+        if (!fns || fns.length === 0) {
+            return false;
+        }
+        for(var i = 0, fn; fn = fns[i++];) {
+            fn.apply(this, arguments);
+        }
+    };
+    
+    remove = function(key, fn) {
+        var fns = clientList[key];
+        if(!fns) {
+            return false;
+        }
+        if (!fn) {
+            fns && (fns.length = 0);
+        } else {
+            for(var l = fns.length - 1; l >= 0; l--) {
+                var _fn = fns[l];
+                if (_fn === fn) {
+                    fns.splice(l, 1);
+                }
+            }
+        }
+    };
+    
+    return {
+        listen: listen,
+        trigger: trigger,
+        remove: remove
+    }
+    
+})();
+
+Event.listen('squareMeter88', function(price) {
+    console.log(price);
+});
+Event.trigger('squareMeter88', 2000000);
+```
+
+## 必须先订阅再发布吗？
+
+发布——订阅模式，都是订阅者必须先订阅一个消息，随后才能接收到发布者发布的消息；如果是发布者先发布一条消息，而在此之前并没有对象来订阅它，这条消息将消失在宇宙中；
+
+- 在某些情况下，需要先将这条消息保存下来，等到有对象来订阅它的时候，再重新把消息发布给订阅者，跟qq中的离线消息一样，离线消息被保存在服务器中，接受人下次登录上线之后，可以重新收到这条消息
+- 例如前面的网站中，ajax请求成功返回用户登录成功之后发布一个事件，在此之前订阅了这个事件的模块可以接受到这些用户信息；但这只是理想的情况，因为异步的问题，不能保证ajax请求返回的时间，有可能返回得比较快，在模块代码还没加载好之前（还没来得及去订阅事件），特别是用了一些模块化惰性加载的技术后，我们需要发布—订阅对象拥有先发布后订阅的能力
+- 为了满足这个需求，要建立一个存放离线事件的堆栈，当事件发布的时候，如果此时还没有订阅者来订阅这个事件，暂时把发布事件的动作包裹在一个函数里，这些函数将被存入堆栈中，等到有对象来订阅事件的时候，依次遍历堆栈执行这些函数，也就是重新发布里面的事件。当然离线事件的生命周期只有一次，就像qq的未读消息只会被重新阅读一次，所以刚才的操作只能进行一次
+
+## 全局事件的命名冲突
+
+随着使用的频繁，难免会出现事件名冲突的情况，所以还可以给Event提供创建命名空间的功能
+
+在提供最终代码之前，先感受一下怎么使用新增的功能
+
+```javascript
+// 先发布后订阅
+Event.trigger('click', 1);
+Event.listen('click', function(a) {
+    console.log(a); // 1
+});
+
+// 使用命名空间
+Event.create('namespace').listen('click', function(a) {
+    console.log(a);
+});
+Event.create('namespace').trigger('click', 1);
+```
+
+```javascript
+var Event = (function() {
+    
+    var global = this,
+        Event,
+        _default = 'default';
+    
+    Event = function () {
+        
+        var _listen,
+            _trigger,
+            _remove,
+            _slice = Array.prototype.slice,
+            _shift = Array.prototype.shift,
+            _unshift = Array.prototype._unshift,
+            namespaceCache = {},
+            find,
+            each = function ( ary, fn ) {
+                var ret;
+                for( var i = 0, l = ary.length; i < l; i++ ) {
+                    var n = ary[i];
+                    ret = fn.call(n, i, n);
+                }
+                return ret;
+            };
+        
+        _listen = function ( key, fn, cache ) {
+            if( !cache[key] ) {
+                cache[key] = [];
+            }
+            cache[key].push(fn);
+        };
+        
+        _remove = function ( key, fn, cache ) {
+            if( cache[key] ) {
+                if( fn ) {
+                    for( var l = cache[key].length - 1; l >= 0; l-- ) {
+                        if (cache[key][l] === fn) {
+                            cache[key].splice(l, 1);
+                        }
+                    }
+                } else {
+                    cache[key] = [];
+                }
+            }
+        };
+        
+        _trigger = function () {
+            var key = _shift.call(arguments),
+                cache = _shift.call(arguments),
+                args = arguments,
+                _self = this,
+                ret,
+                stack = cache[key];
+            
+            if (!stack || !stack.length) {
+                return;
+            }
+            return each(stack, function() {
+                return this.apply(_self, args);
+            });
+        };
+        
+        _create = function (namespace) {
+            var namespace = namespace || _default;
+            var cache = {},
+                offlineStack = [], // 离线事件
+                ret = {
+                    listen: function (key, fn, last) {
+                        _listen( key, fn, cache );
+                        if ( offlineStack === null ) {
+                            return;
+                        }
+                        if ( last === 'last' ) {
+                            offlineStack.length && offlineStack.pop()();
+                        } else {
+                            each(offineStack, function() {
+                                this();
+                            });
+                        }
+                        
+                        offlineStack = null;
+                    },
+                    one: function (key, fn, last) {
+                        _remove( key, null, cache );
+                    },
+                    remove: function ( key, fn ) {
+                        _remove(key, fn, cache);
+                    },
+                    trigger: function () {
+                        var fn,
+                            args,
+                            _self = this;
+                        
+                        _unshift.call(arguments, cache);
+                        args = arguments;
+                        fn = function () {
+                            return _trigger.apply( _self, args );
+                        };
+                        // 离线堆栈存在，还没有订阅者
+                        if (offlineStack) {
+                            return offlineStack.push( fn );
+                        }
+                        return fn();
+                    }
+                };
+            	
+            	return namespaceCache[namespace] || (namespaceCache[namespace] = ret);
+            	/* return namespace ? 
+                    ( namespaceCache[namespace] ? namespaceCache[namespace] : namespaceCache[namespace] = ret )
+            			: ret; */
+        };
+        
+        return {
+            create: _create,
+            one: function(key, fn, last) {
+                var event = this.create();
+                event.one(key, fn, last);
+            },
+            remove: function(key, fn) {
+                var event = this.create();
+                event.remove(key, fn);
+            },
+            listen: function(key, fn, last) {
+                var event = this.create();
+                event.listen(key, fn, last);
+            },
+            trigger: function() {
+                var event = this.create();
+                event.trigger.apply(this, arguments);
+            }
+        }
+        
+    };
+    
+    return Event;
+    
+})();
+```
+
+# 命令模式
