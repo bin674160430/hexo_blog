@@ -861,3 +861,168 @@ var Event = (function() {
 ```
 
 # 命令模式
+
+最简单和优雅的模式之一，有时候需要向某些对象发送请求，但是并不知道请求的接收者是谁，也不知道被请求的操作是什么，希望用一种松耦的方式来设计程序，使得请求发送者和接收者能够消除彼此之间的耦合关系。
+
+## 菜单程序
+
+编写一个用户界面程序，至少有10个按钮，因为项目复杂，会有一定的分工，某个程序员负责绘制按钮（完全不知道按钮将用来干什么，只知道完成这个按钮的绘制之后，应该怎么给它绑定`onclick`），另外一些程序员负责编写点击按钮后的具体行为，这些行为都将被封装在对象里。
+
+```javascript
+// setCommand负责往按钮上安装命令，执行命令的动作被约定为调用command对象execute方法
+var setCommand = function(button, command) {
+    button.onclick = function() {
+        command.execute();
+    }
+};
+
+// 具体菜单操作
+var MenuBar = {
+    refresh: function() {
+        console.log('刷新菜单目录');
+    }
+};
+
+var SubMenu = {
+    add: function() {
+        console.log('增加子菜单');
+    },
+    del: function() {
+        console.log('删除子菜单');
+    }
+};
+
+// 在让button变得有用起来之前，先把这些行为都封装在命令类中
+var RefreshMenuBarCommand = function(receiver) {
+    this.receiver = receiver;
+};
+RefreshMenuBarCommand.prototype.execute = function() {
+    this.receiver.refresh();
+};
+
+var AddSubMenuCommand = function(receiver) {
+    this.receiver = receiver;
+};
+AddSubMenuCommand.prototype.execute = function() {
+    this.receiver.add();
+};
+
+var DelSubMenuCommand = function(receiver) {
+    this.receiver = receiver;
+};
+DelSubMenuCommand.prototype.execute = function() {
+    console.log('删除子菜单');
+};
+
+// 把命令接受者传入到command中，并且把command对象安装到button上面
+var button1 = document.getElementById('button1');
+var button2 = document.getElementById('button2');
+var button3 = document.getElementById('button3');
+
+var refreshMenuBarCommand = new RefreshMenuBarCommand(MenuBar);
+var addSubMenuCommand = new AddSubMenuCommand(SubMenu);
+var delSubMenuCommand = new DelSubMenuCommand(SubMenu);
+
+setCommand(button1, refreshMenuBarCommand);
+setCommand(button2, addSubMenuCommand);
+setCommand(button3, delSubMenuCommand);
+```
+
+## 撤消和重做
+
+游戏中把用户在键盘的输入都封装成命令，执行过的命令将被存放到堆栈中，播放录像的时候只需要从头开始依次执行这些命令即可
+
+```javascript
+var Ryu = {
+    attack: function() {
+        console.log('攻击');
+    },
+    defense: function() {
+        console.log('防御')；
+    },
+    jump: function() {
+        console.log('跳跃');
+    },
+    crouch: function() {
+        console.log('蹲下');
+    }
+};
+
+var makeCommand = function(receiver, state) {
+    return function() {
+        receiver[state]();
+    }
+};
+
+var commands = {
+    "119": "jump",
+    "115": "crouch",
+    "97": "defense",
+    "100": "attack"
+};
+
+var commandStack = []; // 保存命令的堆栈
+document.onkeypress = function(ev) {
+    var keyCode = ev.keyCode,
+        command = makeCommand(Ryu, commands[keyCode]);
+    if(command) {
+        command(); // 执行命令
+        commandStack.push(command); // 将刚刚执行过的命令保存进堆栈
+    }
+};
+
+// 点击播放录像
+document.getElementById('replay').onclick = function() {
+    var command;
+    while(command = commandStack.shift()) { // 从堆栈里依次去除命令并执行
+        command();
+    }
+}
+```
+
+## 宏命令
+
+一组命令的集合，通过执行宏命令的方式，可以一次执行一批命令；想象一下，有一个王能遥控器，每天回家的时候，只要按一个特别的按钮，它就会关上房间门，顺便打开电脑登录QQ
+
+```javascript
+var closeDoorCommand = {
+    execute: function() {
+        console.log('关门');
+    }
+};
+
+var openPcCommand = {
+    execute: function() {
+        console.log('开电脑');
+    }
+};
+
+var openQQCommand = {
+    execute: function() {
+        console.log('登录qq');
+    }
+};
+
+//宏命令
+var MacroCommand = function() {
+    return {
+        commandsList: [],
+        add: function(command) {
+            this.commandsList.push(command);
+        },
+        execute: function() {
+            for(var i = 0, command; command = this.commandsList[i++];) {
+                command.execute();
+            }
+        }
+    }
+};
+
+var macroCommand = MacroCommand();
+macroCommand.add(closeDoorCommand);
+macroCommand.add(openPcCommand);
+macroCommand.add(openQQCommand);
+
+macroCommand.execute();
+```
+
