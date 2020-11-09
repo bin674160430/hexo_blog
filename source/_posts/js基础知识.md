@@ -122,6 +122,10 @@ console.log(myObject.getName()) // lan
 console.log(myObject.__name) // undefined
 ```
 
+# arguments
+
+不是`javascript`数组结构，可以视为一个类似数组的结构，如果试图在`arguments`上使用数组的方法将会报错，传递给参数的所有参数集合，这个集合有一个名为`length`的属性，可以使用数组索引来获取，如`arguments[0]`，
+
 # this、call、apply
 
 `call(object, ...arguments)`
