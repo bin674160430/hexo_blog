@@ -248,3 +248,7 @@ document.addEventListener('touchstart', function () {
 a:link{}	a:visited{}	a:hover{}	a:active{}
 ```
 
+# new Date()
+
+​	参数是日期字符串格式，需要是`YYYY/MM/DD`，如 `new Date('2020/11/19')`
+​	`YYYY-MM-DD`在android可以转换为正确的日期，在ios不行

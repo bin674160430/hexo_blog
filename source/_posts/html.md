@@ -7,6 +7,13 @@ tags:
     - html
 ---
 
+# HTML5与HTML5.1的区别
+
+​	最初指定`HTML5`的人（WHATWG）对版本号不太关注，认为`HTML5`是一门"活的"语言，鼓励`web`开发者关注浏览器的支持情况，而非版本号。
+
+​	后来，WHATWG把HTML5交给W3C官方，W3C是一个严谨、细致的组织，希望区分最初发布的HTML5和后来经过改进的版本，因此，W3C决定将最初发布的HTML5命名为HTML 5.0，第二次发布的版本是 HTML 5.1，第三次发布 HTML 5.2，所有这些版本都还是HTML5。
+
+​	后续的HTML5标准不大可能再有大的改动了，如果有新功能，也会以独立、补充性的规范形式发布。这样，少数几个人就可以快速制定新的HTML5功能规范，而不必等待整个语言的修订。
 
 # DOCTYPE 是什么？严格模式与混杂模式区分？
 
@@ -16,9 +23,7 @@ tags:
 
 `严格模式`的排版和`javascript`运作模式是以浏览器支持的最高标准运行
 
-`混杂模式`页面以宽松向后兼容的方式显示，模拟老式浏览器的行为以防止站点无法工作
-
-`DOCTYPE`不存在或者格式不正确会导致文档以混杂模式呈现
+`混杂模式`页面以宽松向后兼容的方式显示，模拟老式浏览器的行为以防止站点无法工作（浏览器会尝试根据有点不那么正常的规则呈现网页），`DOCTYPE`不存在或者格式不正确会导致文档以混杂模式呈现——问题是不同浏览器的混杂模式也不一样，不是字体大小不一样，就是布局上有瑕疵，或者出现其他不一致的问题
 
 常见 *doctype*：
 
@@ -42,7 +47,142 @@ tags:
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
 ```
 
+# XHTML回归
 
+想强制使用XHTML语法，担心自己（或同事）在不经意间“堕落”到使用过去HTML的松懈语法，可以使用XHTML5，给HTML5加上XML限制，必须在html元素中明确添加XHMTL命名空间、关闭每一个元素、所有标签都要小写....
+
+```html
+<!DOCTYPE html>
+<html lang="en" xmls="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8"/>
+        <title>HTML Document</title>
+        <link href="style.css" ref="stylesheet"/>
+        <script src="script.js"></script>
+    </head>
+    <body>
+        <p>Let's rock the browser, XHTML5 style.</p>
+    </body>
+</html>
+```
+
+如果页面有什么错误，浏览器只会显示处理了一部分的页面
+
+> 技巧：只要把文件的扩展名改为.xhtml或.xht，多数浏览器（包括Firefox、Chrome、IE9+）都会认为该页面是从web服务器下载下来的，而且MIME类型为XML
+
+# HTML5新增的元素
+
+| 类别                   | 元素                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| 用于构建页面的语意元素 | `<article>`<br />`<aside>`<br />`<figcapiton>`<br />`<figure>`<br />`<footer>`<br />`<header>`<br />`<nav>`<br />`<section>`<br />`<details>`<br />`<summary>`（以前支持，现在正式列入规范） |
+| 用于标识文本的语意元素 | `<mark>`<br />`<time>`<br />`<wbr>`列入规范                  |
+| web表单及交互          | `<input>`（增加类型）<br />`<datalist>`<br />`<keygen>`<br />`<meter>`<br />`<progress>`<br />`<command>`<br />`<menu>`<br />`<output>` |
+| 音频、视频及插件       | `<audio>`<br />`<video>`<br />`<source>`<br />`<embed>`列入规范<br /> |
+| Canvas                 | `<canvas>`                                                   |
+| 非英语支持             | `<bdo>`<br />`<rp>`<br />`<rt>`<br />`<ruby>`                |
+
+# HTML5删除元素
+
+纯表现的元素：basefont (基准字体), big(大号字体), center(文本水平居中), font(字体), s(删除线文本), strike(), tt(等宽字体), u(下划线文本)
+
+对可用性产生负面影响的元素：frame, frameset, noframes (特定窗口、框架)
+
+产生混淆的元素：acronym(缩写，被abbr代替), applet(嵌入对象，被object代替), dir(目录列表)
+
+参考：https://www.w3school.com.cn/tags/tag_comment.asp
+
+# 改变的元素
+
+将旧元素用于新的目的
+
+`<small>`不再是减少字体的大小，表示附属细则，虽然删除了`<big>`，但保留了`<small>`
+
+`<hr>`用于在两个区域间画一条水平线，表示主题的转换，从一个主题变为另一个主题
+
+`<s>`删除的文本，表示不再准确或不再相关的内容
+
+`<strong>`粗体，重要的文本，需要在周围文本中突出的文本
+
+`<b>`粗体文本，但该文本并不比其它文本更重要，比如关键字、产品名称等需要粗体表示可以用
+
+`<em>`重读文本，就是朗读的时候要大声读出来
+
+`<i>`斜体文本，但该文本并不比其它文本更重要，比如外文单词、技术术语等需要斜体表示的文本可以使用
+
+# 调整的元素
+
+调整元素使用规则
+
+不常用的`<address>`元素并不适合标注邮政地址，这个元素只有一个目的，提供HTML文档作者的联系信息，比如电子邮件地址或网站链接：
+
+```html
+Our website is managed by:
+<address>
+	<a href="mailto:jsolo@mysite.com">John Solo</a>,
+    <a href="mailto:lcheng@mysite.com">Lisa Cheng</a>, and
+    <a href="mailto:rpavane@mysite.com">Ryan Pavane</a>.
+</address>
+```
+
+`<ol>`元素（有序列表）现在有了`reversed`属性，用于反转序号，目前只有Chrome和Safari支持
+
+# 标准化的元素
+
+HTML5把一些浏览器支持，但没有得到之前HTML和XHTML规范承认的元素加入了标准
+
+`<wdr>`断行，某个词太长了，一行放不下，浏览器就会在`<wdr>`标注的地方断开
+
+```html
+<p>Many linguists remain unconvinced that 
+<b>supercali<wbr>fragilistic<wbr>expialidocious</b> is indeed a word.</p>
+```
+
+如果需要在小空间（表格、小方块）放长名字，可以用`<wdr>`来标注可以在名字的什么地方断行，只有在相应空间盛不下长名字才会断行，上面代码将出现下图三种情况
+
+{% image wdr.png 图片 %}
+
+# 对付旧版本浏览器
+
+## 平稳退化
+
+例如`<video>`元素提供了一种后背机制，可以为老的浏览器提供代替内容（`Flash`插件播放器）
+
+## 借助JavaScript
+
+HTML5的某些功能完全可以用优秀的Javscrtipt库来实现，比较成熟的称为“腻子脚本”
+
+## [了解浏览器支持情况](http://caniuse.com) http://caniuse.com
+
+## [浏览器装机情况统计 http://gs.statcounter.com](http://gs.statcounter.com)
+
+## [网页跟踪服务Google Analyics http://www.google.com/analytics](http://www.google.com/analytics)
+
+## 检测功能
+
+http://modernizr.com/download 下载js文件
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>HTML5 Feature Dection</title>
+        <script src="modernizr-latest.js"></script>
+    </head>
+    <body>
+        <script>
+        	if (Modernizr.draganddrop) {
+                console.log('支持拖拽');
+            } else {
+                console.log('不支持拖拽');
+            }
+        </script>
+    </body>
+</html>
+```
+
+## 腻子脚本 [http://tinyurl. com/polyfill](http://tinyurl. 
+com/polyfill)
 
 # 行内元素、块级元素、空元素有哪些？
 
@@ -99,16 +239,6 @@ web 语义化是指通过 HTML 标记表示页面包含的信息，包含了 HTM
 - 本地离线存储localStorage长期缓存数据，浏览器关闭后数据不丢失；sessionStroage的数据在浏览器关闭后自动删除
 - 表单控件，日历、日期、时间、电子邮件、网址、搜素
 - 新的技术webworker、websocket
-
-## 可移除元素
-
-纯表现的元素：basefont (基准字体), big(大号字体), center(文本水平居中), font(字体), s(删除线文本), strike(), tt(等宽字体), u(下划线文本)
-
-对可用性产生负面影响的元素：frame, frameset, noframes (特定窗口、框架)
-
-产生混淆的元素：acronym(缩写，被abbr代替), applet(嵌入对象，被object代替), dir(目录列表)
-
-参考：https://www.w3school.com.cn/tags/tag_comment.asp
 
 ## 处理h5新标签的兼容问题
 

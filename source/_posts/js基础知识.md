@@ -7,6 +7,47 @@ tags:
     - 设计模式
 ---
 
+# 声明提升
+
+​	内存一次分配；预编译：在所有代码执行之前，计算机从头到尾看一遍，将这个程序需要运行的空间一次性分配好；函数也会声明提升——在当前作用域，声明变量和函数，会直接提升到整个代码的最前面运行。
+
+```javascript
+// 看代码，从上往下运行，这里还没定义变量和函数，就可以调用了
+console.log(num); // undefined
+var num = 10;
+console.log(num); // 10
+show(); // 'show'
+function show() {
+  console.log('show');
+}
+
+// 以上代码会被识别为
+var num;
+function show() {
+  console.log('show');
+}
+console.log(num);
+num = 10;
+console.log(num);
+show();
+
+
+// ----
+function test() {
+  var a = 1;
+  console.log(a);
+}
+test(); // 1
+console.log(a); // 报错，a为定义
+// 省略var，强制给一个变量赋值，这个变量会被js强制声明为全局变量
+function test() {
+  a = 1; // 不使用，原则上属于语法错误
+  console.log(a);
+}
+test(); // 1
+console.log(a); // 1
+```
+
 # 对象
 
 javascript动态类型语言，一切都建立在`鸭子模型`的概念
