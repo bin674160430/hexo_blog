@@ -188,6 +188,12 @@ $('div').on('touchmove', function(){
 
 https://developers.google.cn/web/fundamentals/design-and-ux/input/touch/#_7
 
+# android与ios滚动条
+
+ios滚动条自动隐藏，不占据物理空间像素
+
+android滚动条占据约1像素，具体看浏览器滚动条样式尺寸
+
 # 移动端html5 audio autoplay失效
 
 由于自动播放网页中的音频或者视频，会给用户带来一些困扰或者不必要的流量消耗，所以苹果系统和安卓系统通常都会禁止自动播放和使用 JS 的触发播放，必须由用户来触发才可以播放
