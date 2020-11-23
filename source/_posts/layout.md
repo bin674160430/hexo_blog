@@ -107,8 +107,10 @@ div > h1 {
 	device-height, min-device-height, max-device-height
 	// 方向
 	orientation: landscape(横向) portrait(纵向)
-	// 宽高比 1/1 正方形
+	// 宽高比 1/1 正方形，16∶9的宽屏显示器可以写成aspect-ratio:16/9
 	device-aspect-ratio, min-device-aspect-ratio, max-device-aspect-ratio
+	// 屏幕或打印分辨率，min-resolution: 300dpi，也可以接受每厘米多少点，比如min-resolution: 118dpcm
+	resolution
 	// 颜色位深，1黑白，目前主流浏览器都是24，每个像素可以显示百万种颜色，检测是否支持彩色输出，支持的颜色数量
 	color, min-color, max-color
 */
