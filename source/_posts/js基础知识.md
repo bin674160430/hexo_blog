@@ -268,7 +268,7 @@ func(3, 4);
 // 1. new调用，this绑定新创建的对象 bar 
 var bar = new foo();
 
-// 2. 函数通过call、apply显示绑定, this 绑定指向的对象 obj
+// 2. 函数通过call、apply显示绑定,this 绑定指向的对象 obj
 var bar = foo.call(obj);
 
 // 3. 某个上下文对象中调用隐式绑定, this 绑定指向 obj1
