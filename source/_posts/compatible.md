@@ -26,7 +26,7 @@ tags:
 	怎么得到想要的结果？ 20 + 10 + 20 + 20 = 70
 	上面元素与下面元素的外边距margin-bottom: 10，margin-top: 20，其实就是30，设置其中一个值即可
 	20 + 20 + 30 = 70
-	或者其中一个元素包裹多一层，并加入overflow: hidden;
+	或者其中一个元素包裹多一层，并加入overflow: hidden
 -->
 <div id="test">
     <div style="height: 20px;">上面元素</div>
