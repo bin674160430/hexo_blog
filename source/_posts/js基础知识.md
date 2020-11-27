@@ -262,7 +262,41 @@ var func = function(a, b, c, d) {
 func(3, 4);
 ```
 
+## 判断this
 
+```javascript
+// 1. new调用，this绑定新创建的对象 bar 
+var bar = new foo();
+
+// 2. 函数通过call、apply显示绑定, this 绑定指向的对象 obj
+var bar = foo.call(obj);
+
+// 3. 某个上下文对象中调用隐式绑定, this 绑定指向 obj1
+var bar = obj1.foo();
+
+// 4. 默认绑定，严格模式下绑定undefined, 否则绑定全局对象
+var bar = foo();
+
+// 5. 如果需要柯里化，调用函数本身，采用默认绑定，那么bind, apply, call的参数是 null, undefined，绑定到的全局对象可能导致不可预计的后果，比如修改到全局对象，或者某个第三方库的内容
+// 采用Object.create(null), 虽然和{}很像，但是不会创建Object.prototype，比{}更空
+function foo(a, b) {
+  console.log("a:" + a + ", b:" + b);
+}
+var ø = Object.create(null);
+foo.apply(ø, [2,3]); // a:2, b:3
+
+var bar = foo.bind(ø, 2);
+bar(3); // a:2, b:3
+```
+
+
+
+# new构造函数调用
+
+1. 创建（构造）一个全新的对象
+2. 这个新对象会原型连接
+3. 这个新对象会绑定到函数调用的this
+4. 如果函数没有返回其他对象，那么new表达式中的函数调用会自动返回这个新对象
 
 # 原型模式和基于原型继承的javascript对象系统
 
