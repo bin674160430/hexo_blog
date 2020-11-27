@@ -9,7 +9,7 @@ tags:
 
 # [es6的新特性](https://es6.ruanyifeng.com/)
 
-常用的有：`let, const`命令， `解构赋值`，`模版字符串`，`Set, Map`，``
+常用的有：`let, const`命令， `解构赋值`，`模版字符串`，`Set, Map`
 
 `var`变量可以在声明之前使用，值为 `undefined`
 
