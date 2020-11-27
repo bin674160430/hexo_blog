@@ -19,7 +19,7 @@ tags:
 <!--
 	#test 高度是 20 + 20 + 20 = 60
 	margin-bottom: 10 去哪里了？
-	由于下面元素设置的margin-top = 20  >  上面元素 margin-bottom = 10
+	由于下面元素设置的margin-top = 20 > 上面元素 margin-bottom = 10
 	只能识别大的值，所以margin-top = 20 计算
 -->
 <!--
