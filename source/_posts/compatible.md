@@ -194,6 +194,20 @@ ios滚动条自动隐藏，不占据物理空间像素
 
 android滚动条占据约1像素，具体看浏览器滚动条样式尺寸
 
+# new Image
+
+```javascript
+var img = new Image();
+// new Image 的 onload 在部分android webview不会执行
+// 需要将new Image 换成 document.createElement('img');
+img.onload = function() {
+    console.log('image load success');
+}
+img.src = '';
+```
+
+
+
 # 移动端html5 audio autoplay失效
 
 由于自动播放网页中的音频或者视频，会给用户带来一些困扰或者不必要的流量消耗，所以苹果系统和安卓系统通常都会禁止自动播放和使用 JS 的触发播放，必须由用户来触发才可以播放
