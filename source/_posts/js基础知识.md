@@ -118,6 +118,72 @@ joinChoir(duck); // 恭喜加入合唱团， 1
 joinChoir(chicken); // 恭喜加入合唱团， 2
 ```
 
+## 属性描述符
+
+​	ES5之前，JavaScript本身并没有提供可以直接检测属性特性的方法，比如判断属性是否只读；从ES5开始，所有的属性都具备了属性描述符
+
+```javascript
+var myObject = {};
+Object.defineProperty(myObject, "a", {
+    value: 1,
+    writable: true, // 可修改
+    // 可配置, 只要属性是可配置的，就可以使用defineProperty来修改属性描述符
+    // 当configurable是true，就可以使用defineProperty来修改属性描述符，
+    // 注意：即使 configurable是false，还是可以把writable的状态由true改为false，但是无法由false改为true
+    // configurable是false的时候，禁止删除这个属性的 delete myObject.a 无效
+    configurable: true,
+    // 可枚举， 就是无法直接访问这个key
+    // 比如 enumerable: false,  for (key in myObject) { console.log(key) }; 这个属性a将不会被遍历到
+    enumerable: true
+});
+myObject.a; // 2
+
+// 禁止扩展属性,  禁止一个对象添加新属性并保留已有属性
+Object.preventExtension(myObject);
+myObject.b = 3;
+myObject.b; // undefined
+
+// 密封 Object.seal(...)
+// 会创建一个密封对象，这个方法实际上会在一个现有的对象上调用 Object.preventExtension(...)
+// 并把所有现有属性标记为configurable: false，密封之后不能添加新属性，不能重新配置或者删除任何现有属性，只可以修改属性的值
+
+// 冻结 Object.freeze(...)
+// 会创建一个冻结对象，这个方法实际上会在一个现有对象上调用Object.seal(...)
+// 并把所有数据访问属性标记为writable: false, 这样就无法修改它们的值
+```
+
+## 存在性
+
+​	`in`操作符会检查属性是否存在对象及其`prototype`原型链中，`hasOwnProperty`只会检查属性是否存在对象中，不会检查原型链
+
+```javascript
+var myObject = {};
+Object.defineProperty(
+	myObject,
+    "a",
+    { enumerable: true, value: 2 }
+);
+
+Object.defineProperty(
+	myObject,
+    "b",
+    { enumerable: false, value: 3 }
+);
+myObject.b; // 3
+"b" in myObject; // true
+myObject.hasOwnProperty("b"); // true
+myObject.propertyIsEnumerable( "b" ); // false
+
+for (var key in myObject) {
+    console.log(key);
+}// a
+
+Object.keys( myObject ); // ["a"] 
+Object.getOwnPropertyNames( myObject ); // ["a", "b"]
+```
+
+
+
 # 多态
 
 同一操作作用于不同的对象上面，可以产生不同的解释和不同的执行结果
@@ -299,6 +365,11 @@ func(3, 4);
 
 ## 判断this
 
+	1. 如果是`new`调用，绑定到新建的对象
+ 	2. 由`call`、`apply`、`bind`调用，绑定到制定对象
+ 	3. 由上下文对象调用，绑定到那个上下文
+ 	4. 默认：严格模式下绑定到`undefined`，否则绑定到全局对象
+
 ```javascript
 // 1. new调用，this绑定新创建的对象 bar 
 var bar = new foo();
@@ -324,14 +395,58 @@ var bar = foo.bind(ø, 2);
 bar(3); // a:2, b:3
 ```
 
+# 类函数
+
+`javascript`根本就不存在类，所有函数默认都有拥有一个`prototype`的共有且不可美哦局的属性，它会指向另一个对象。由于`javascript`没有类的复制机制，不能创建一个类的多个实例，只能创建多个对象，它们`prototype`关联的是同一个对象，在默认情况下并不会进行复制，因此这些对象之间并不会完全失去联系，它们是互相关联的
+
+```javascript
+function Foo() {};
+Foo.prototype; // {} 这个对象是在调用 new Foo()时创建的，最后被关联到 Foo.prototype对象上
+var a = new Foo();
+Object.getPrototypeOf(a) === Foo.prototype; // true
+// new Foo()实际上没有直接创建关联，这个关联只是一个意外的副作用，new Foo()只是间接地完成了：一个关联到其它对象的新对象
+```
+
+# 构造函数
+
+​	函数本身并不是构造函数，使用`new`时，函数调用会变成构造函数调用
+
+```javascript
+function Foo() {}; // Foo.prototype.constructor === Foo; 默认是指向 Foo 自己
+Foo.prototype = {}; // 创建一个新原型对象
+var a1 = new Foo();
+a1.constructor === Foo; // false
+a1.constructor === Object; // true
+// a1没有.constructor属性，它会委托prototype链上的Foo.prototype，但是Foo.prototye也没有.constructor属性
+// 继续委托到Object.prototype，这个对象有.constructor属性，指向内置的Object()函数
+```
 
 
-# new构造函数调用
 
-1. 创建（构造）一个全新的对象
-2. 这个新对象会原型连接
-3. 这个新对象会绑定到函数调用的this
-4. 如果函数没有返回其他对象，那么new表达式中的函数调用会自动返回这个新对象
+# new
+
+​	new调用函数，发生构造函数调用时，会自动执行下面操作
+
+	1. 创建一个全新的对象
+ 	2. 这个新对象会被执行**原型**连接
+ 	3. 这个新对象会绑定到函数调用的`this`
+ 	4. 如果函数没有返回其他对象，那么`new`表达式中的函数调用会自动返回这个新对象
+
+# ø创建空对象
+
+​	`Object.create(null)` 和 `{}`很像，但并不会创建`Object.prototype`
+
+```javascript
+function foo(a, b) {
+    console.log('a: ' + a + ', b: ' + b);
+}
+
+var ø = Object.create(null);
+foo.apply(ø, [2,3]); // a:2, b:3
+
+var bar = foo.bind(ø, 2);
+bar(3); // a:2, b:3
+```
 
 # 原型模式和基于原型继承的javascript对象系统
 
@@ -399,6 +514,29 @@ A.prototype = obj;
 var a = new A();
 console.log(a.name); // lan
 ```
+
+## Object.prototype
+
+​	所有的`prototype`链最终都会指向内置的`Object,prototype`
+
+## 隐式屏蔽
+
+```javascript
+var anotherObject = {
+    a: 2
+};
+var myObject = Object.create(anotherObject);
+anotherObject.a; // 2
+myObject.a; // 2
+anotherObject.hasOwnProperty("a"); // true
+myObject.hasOwnProperty("a"); // false
+myObject.a++; // 隐式屏蔽
+myObject.a; // 3
+anotherObject.a; // 2
+myObject.hasOwnProperty("a"); // true
+```
+
+
 
 # 闭包
 
@@ -1141,29 +1279,3 @@ addEvent(div, 'click', function() {
     console.log(1);
 });
 ```
-
-# new
-
-​	new调用函数，发生构造函数调用时，会自动执行下面操作
-
-	1. 创建一个全新的对象
- 	2. 这个新对象会被执行**原型**连接
- 	3. 这个新对象会绑定到函数调用的`this`
- 	4. 如果函数没有返回其他对象，那么`new`表达式中的函数调用会自动返回这个新对象
-
-# ø创建空对象
-
-​	`Object.create(null)` 和 `{}`很像，但并不会创建`Object.prototype`
-
-```javascript
-function foo(a, b) {
-    console.log('a: ' + a + ', b: ' + b);
-}
-
-var ø = Object.create(null);
-foo.apply(ø, [2,3]); // a:2, b:3
-
-var bar = foo.bind(ø, 2);
-bar(3); // a:2, b:3
-```
-
