@@ -7,6 +7,34 @@ tags:
     - 设计模式
 ---
 
+# 行为委托
+
+​	只有对象来设计代码，可以让语法更加简洁、代码结构更加清晰，对象之间是兄弟关系，互相委托，而不是父类和子类的关系
+
+```javascript
+Task = {
+    setId: function(ID) { this.id = ID; },
+    outputID: function() { console.log(this.id); }
+};
+// 让XYZ委托Task
+XYZ = Object.create(Task);
+XYZ.prepareTask = function(ID, Label) {
+    this.setID(ID);
+    this.label = Label;
+};
+XYZ.outputTaskDetails = function() {
+    this.outputID();
+    console.log(this.label);
+};
+// Task和XYZ并不是类（或者函数），它们是对象。
+// XYZ通过Object.create()创建，它的Prototype委托了Task对象。
+// 相比于面向类（或者说面向对象），这种编码风格称为“对象关联”，只需要关心XYZ对象委托了Task对象
+// 不同之处
+// 1. id和label数据成员都是直接存储在XYZ上，而不是Task，在Prototype委托中最好把状态保存在委托者XYZ，而不是委托目标Task
+// 2. 在类设计模式中，父类（Task）和子类（XYZ）都有outputTask方法，这样就可以利用重写（多态）的优势。
+// 在委托中恰好相反，尽量避免在Prototype链的不同级别中使用相同的命名，否则就需要使用笨拙且脆弱的语法来消除引用分歧
+```
+
 # 单例模式
 
 保证一个类仅有一个实例，并提供一个访问它的全局访问点，例如登录浮窗

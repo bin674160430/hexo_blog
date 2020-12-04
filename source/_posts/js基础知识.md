@@ -88,6 +88,7 @@ var c = foo(2);
 javascript动态类型语言，一切都建立在`鸭子模型`的概念
 
 > 鸭子模型——如果它走起路来像鸭子，叫起来也是鸭子，那么它就是鸭子。
+> 常见且脆肉的(内省模式)
 
 指导我们只关注对象的行为，而不是关注对象本身，加入合唱团的动物根本不用检查类型，只要保证有`duckSinging()`方法，就能加入合唱团
 
@@ -448,11 +449,13 @@ var bar = foo.bind(ø, 2);
 bar(3); // a:2, b:3
 ```
 
+# 原型链
+
+​	如果在第一个对象上没有找到需要的属性或者方法引用，引擎就会继续在`Prototype`关联的对象上进行查找，一次类推，这一系列对象的链接被称为“原型链”。
+
 # 原型模式和基于原型继承的javascript对象系统
 
-从设计模式的角度讲，原型模式是用于创建对象的一种模式，找到一个对象，然后通过克隆来创建一个一模一样的对象。
-
-既然原型模式是通过克隆来创建对象的，那么如果需要一个跟某个对象一模一样的对象，就可以使用原型模式。
+​	从设计模式的角度讲，原型模式是用于创建对象的一种模式，找到一个对象，然后通过克隆来创建一个一模一样的对象。既然原型模式是通过克隆来创建对象的，那么如果需要一个跟某个对象一模一样的对象，就可以使用原型模式。
 
 ```javascript
 // 英雄联盟中妮蔻W技能可以制作一个分身，当她在使用分身技能的时候，需要创建一些跟她一模一样的模型，包括当前的血量、等级等信息
@@ -534,6 +537,47 @@ myObject.a++; // 隐式屏蔽
 myObject.a; // 3
 anotherObject.a; // 2
 myObject.hasOwnProperty("a"); // true
+```
+
+## instanceof 和 ES6的isPrototypeOf
+
+​	`instanceof`引用的对象是否关联
+​	`isPrototypeOf`内省（**鸭子模型**）方法
+
+```javascript
+function Foo() {}
+Foo.prototype.something = function() {}
+var a1 = new Foo();
+a1 instanceof Foo; // true
+```
+
+```javascript
+function Foo() {}
+Foo.prototype...
+
+function Bar() {}
+Bar.prototype = Object.create(Foo.prototype);
+
+var b1 = new Bar("b1");
+
+// 让Foo和Bar互相关联
+Bar.prototype instanceof Foo; // true, 无法直接使用 Bar instanceof Foo
+Object.getPrototypeOf(Bar.prototype) === Foo.prototype; // true
+Foo.prototype.isPrototypeOf(Bar.prototype); // true
+
+// 让b1关联到Foo和Bar
+b1 instanceof Foo; // true
+b1 instanceof Bar; // true
+Object.getPrototypeOf(b1) === Bar.prototype; // true
+Foo.prototype.isPrototypeOf(b1); // true
+Bar.prototype.isPrototypeOf(b1); // true
+
+// 非常简单的内省方法
+Foo.isPrototypeOf(Bar); // true
+Object.getPrototypeOf(Bar) === Foo; // true
+Foo.isPrototypeOf(b1); // true
+Bar.isPrototypeOf(b1); // true
+Object.getPrototypeOf(b1) === Bar; // true
 ```
 
 
