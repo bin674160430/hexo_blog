@@ -124,3 +124,110 @@ const allHeroIsBravo = heroList.every(hero => hero.pos === 'bravo'); // false
 const hasBravoHero = heroList.some(hero => hero.pos === 'bravo'); // true
 ```
 
+# 字符串借用数组方法
+
+```javascript
+const a = 'hero';
+a.join; // undefined
+a.map; // undefined
+const c = Array.prototype.join.call(a, '-'); // 'h-e-r-o'
+const d = Array.prototype.map.call(a, function(v) {
+    return v.toUpperCase()
+}).join("."); // H.E.R.O
+```
+
+# 有效数位
+
+```javascript
+// 无效语法， 因为 . 被视为常量number 42.的一部分
+42.toFixed(3); // SyntaxError
+
+(42).toFixed(3); // "42.000"
+0.42.toFixed(3); // "0.420"
+42..toFixed(3); // "42.000"
+42 .toFixed(3); // "42.000"
+```
+
+# 较小数值
+
+​	二进制浮点数最大的问题（所有遵循IEEE754规范的语言都这样）
+
+```javascript
+0.1 + 0.2 === 0.3; // false
+// 二进制浮点数中的0.1和0.2并不是十分精确，相加后的结果是0.30000000000000004
+```
+
+​	很多程序只需要处理整数，最大不超过百万或者万亿，此时用数字类型是绝对安全的。
+在处理带有效数的数字时需要特别注意，设置无法范围值（机器精度），这个值通常是`2^- 52 (2.220446049250313e-16)`
+从ES6开始，该值就定义在`Number.EPSILON`中，也可以为ES6之前的版本写`polyfill`:
+
+```javascript
+if (!Number.EPSILON) {
+    Number.EPSILON = Math.pow(2, -52);
+}
+// 可以用Number.EPSILON来比较两个数字是否相等
+function numbersCloseEnoughToEqual(n1, n2) {
+    return Math.abs(n1 - n2) < Number.EPSILON;
+}
+```
+
+​	能够出现的最大浮点数大约是 `1.798e+308`，定义在 `Number.MAX_VALUE`；最小浮点数定义在`Number.MIN_VALUE`，大约是 `5e-324`；能够被安全呈现的最大整数是`2^53 - 1`，即`9007199254740991`，在ES6中被定义为`Number.MAX_SAFE_INTEGER`；最小正式是`-9007199254740991`，在ES6中定义为`Number.MIN_SAFE_INTEGER`
+
+# NaN和Infinity
+
+​	`NaN`不是数字，`Infinity`无穷数，计算结果溢出
+
+```javascript
+window.isNaN(2/"foo"); // true
+window.isNaN("foo"); // true, 错误bug来着
+Number.isNaN("foo"); // false
+// 一定要使用 Number.isNaN， ES6提供, 也可以实现以下polyfill
+if (!Number.isNaN) {
+    Number.isNaN = function(n) {
+        return n !== n; // 利用NaN不等于自身的特点
+    };
+}
+```
+
+# ~运算符
+
+​	首先将值强制类型转换为32位数字，然后执行字位操作“非”（对每一个字位进行反转）；
+​	另一种诠释——~返回2的补码， `~x` 大致等同于 `-(x+1)`
+
+```javascript
+~42; // -(42+1) === -43
+// 在 -(x+1) 中唯一能够得到0（或者-0）的x值是-1， 也就是说，~和一些数字值在一起会返回假值0，其它情况则返回真值
+// 字符串的indexOf()所搜指定的子字符串，周到返回子字符的位置（从0开始），否则返回-1
+var a = "test";
+if (a.indexOf('e') === -1) {
+    console.log('匹配不到');
+} else {
+    console.log('匹配到了');
+}
+// 利用~规则，可以实现
+~a.indexOf('a'); // 0
+!~a.indexOf('a'); // true
+
+// ~~x 能将值截为一个32为整数, x | 0 也可以
+1.1+1.22; // 2.3200000000000003
+~~(1.1+1.22); // 2
+(1.1+1.22) | 0; // 2
+```
+
+# !!显示强制类型转换为布尔值
+
+​	第二个`!`会将结果反转回原值，如果需要转换布尔值作运算，一定使用`Boolean()`或者`!!`来显示强制类型转换，让代码更加清晰。
+
+```javascript
+!!"0"; // true
+!!""; // false
+!!null; // false
+!!undefined; // false
+!!0; // false
+!!NaN; // false
+```
+
+# 安全运用隐式强制类型转换
+
+- 如果两边的值中有`true`或者`false`，不要使用`==`
+- 如果两边的值有`[]`、`""`或者`0`，不要使用`==`

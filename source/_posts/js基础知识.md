@@ -7,6 +7,20 @@ tags:
     - 设计模式
 ---
 
+# 内置类型
+
+`null` 、`undefined` 、`boolean` 、`number` 、`string` 、`object` 、 `symbol`
+
+通过`typeof` 的安全防范机制（阻止报错）来检查为定义的变量
+
+```javascript
+if (typeof atob === "undefined") {
+    atob = function() {};
+}
+```
+
+
+
 # 声明提升
 
 ​	内存一次分配；预编译：在所有代码执行之前，计算机从头到尾看一遍，将这个程序需要运行的空间一次性分配好；函数也会声明提升——在当前作用域，声明变量和函数，会直接提升到整个代码的最前面运行。

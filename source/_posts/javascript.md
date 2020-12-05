@@ -20,6 +20,7 @@ tags:
 null == undefined // true
 30 == '30' // true, 类型不同，一个数值，一个字符串，字符串转数值再比较
 true == '1' // true, 任意值是boolean，需要转数值后再比较 true -> 1, false -> 0
+true == '42' // false, 布尔宽松原则， 这里 true -> 1, '42'转换还是42, 条件语句中避免使用 == Boolean
 new Object() == '[object Object]' // true，对象与数值、字符串，把对象转成基础类型值再比较，利用toString或者valueOf, js 核心内置类，会尝试valueOf先于toString
 ```
 

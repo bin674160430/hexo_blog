@@ -266,3 +266,9 @@ a:link{}	a:visited{}	a:hover{}	a:active{}
 
 ​	参数是日期字符串格式，需要是`YYYY/MM/DD`，如 `new Date('2020/11/19')`
 ​	`YYYY-MM-DD`在android可以转换为正确的日期，在ios不行
+
+# parseInt
+
+​	ES5之前，没有第二个参数来指定转换的基数，会根据第一个字符来自行决定基数；
+如果第一个字符是x或者X，则转为十六进制数字；如果是0，则转为八进制数字。
+​	从ES5开始，`parseInt()` 默认转换为十进制数
