@@ -15,6 +15,93 @@ tags:
 
 `==` 为等值符，等号两边类型不同将自动转换成相同类型后比较值
 
+## 强制类型转换
+
+**ToString**
+
+```javascript
+// ToString 负责处理非字符串到字符串的强制类型转换
+null; // "null"
+undefined; // "undefined"
+true; // "true"
+var a = 1.07 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000;
+a.toString(); //  "1.07e21"，极小、极大的数字使用指数形式
+// 如果对象有自己的toString()方法，字符串化时会调用该方法并使用其返回值
+Object.prototype.toString(); // "[object Object]"
+
+// 不安全的JSON值, undefined, function, symbol和包括循环引用（对象之间的相互引用）
+// JSON.stringify() 在对象遇到undefined, funtion, symbol会自动忽略，在数组中会返回null
+JSON.stringify(undefined); // undefined
+JSON.stringify(function() {}); // undefined
+JSON.stringify([1, undefined, function() {}, 4]); // [1,null,null,4]
+var b = {
+    a: 1,
+    c: 0,
+    d: function() {}
+};
+// 对象中定义了toJSON方法，JSON字符串化会优先调用该方法，然后用它的返回值来进行序列化
+b.toJSON = function() {
+    return { b: this.a }
+};
+JSON.stringify(b); // "{"b":1}"
+```
+
+**ToNumber**
+
+```javascript
+// 非数字值当做数字来使用，对字符串处理失败时返回NaN, 对以0开头的十六进制数并不按十六进制处理，而是十进制
+true; // 1
+false; // 0
+undefined; // NaN
+null; // 0
+// 对象（包括数组）会首先被转换为相应的基本类型值，如果返回的是非数字的基本类型值，则再遵循以上规则将其转换为数字
+// 为了将值转换为相应的基本类型值，抽象操作ToPrimitive会首先检查是否有valueOf()方法
+// 如果有且返回基本类型值，就使用该值进行强制类型转换，如果没有就使用toString()的返回值来进行强制类型转换
+// 如果valueOf()和toString()均不返回基本类型值，会产生TypeError错误
+var a = {
+    valueOf: function() {
+        return "1";
+    }
+};
+var b = {
+    toString: function() {
+        return "2";
+    }
+};
+var c = [1,2];
+c.toString = function() {
+    return this.join(""); // "12"
+};
+Number(a); // 1
+Number(b); // 2
+Number(c); // 12
+Number([]); // 0
+Number(["abc"]); // NaN
+```
+
+**ToBoolean**
+
+```javascript
+// 1: true, 0: false
+// javascript中布尔值和数字不一样，值分为以下两类
+// 以下都是假值，布尔强制类型转换结果为false; 假值列表以外的值都是真值
+undefined;
+null;
+false;
++0; -0; NaN;
+"";
+```
+
+## +运算符会将操作数显示强制转为数字
+
+```javascript
++"3.14"; // 3.14
+// + 运算符的期中一个操作数是字符串，则执行字符串拼接，否则执行数字加法
+[1,2] + [3,4]; // "1,23,4", 数组valueOf()操作无法得到基本类型值，转而调用toString(), 变成了 "1,2"+"3,4"
+// - * / 会强制类型转换为数字，只适用于数组
+[3] - [1]; // 2
+```
+
 ```javascript
 // 等号两边是boolean, string, number, 优先转换数字进行比较
 null == undefined // true
@@ -22,6 +109,124 @@ null == undefined // true
 true == '1' // true, 任意值是boolean，需要转数值后再比较 true -> 1, false -> 0
 true == '42' // false, 布尔宽松原则， 这里 true -> 1, '42'转换还是42, 条件语句中避免使用 == Boolean
 new Object() == '[object Object]' // true，对象与数值、字符串，把对象转成基础类型值再比较，利用toString或者valueOf, js 核心内置类，会尝试valueOf先于toString
+```
+
+
+
+# 代码块
+
+```javascript
+// {} 出现在+运算符表达式中，被当做一个值（空对象）来处理
+// []会被强制类型转换为"", 而{}被强制类型转换为"[object Object]"
+[] + {}; // "[object Object]"
+
+// {} 被当做一个独立的空代码块（不执行任何操作），代码块结尾不需要分号
+// + [] 将 [] 显示类型转换为0
+{} + []; // 0
+```
+
+# 运算符优先级 *
+
+[https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Operator_Precedence](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Operator_Precedence)
+
+| 运算符                             | 描述                                         |
+| ---------------------------------- | -------------------------------------------- |
+| . [ ] ()                           | 字段访问、数组下标以及函数调用               |
+| ++ – - ~ ！ typeof new void delete | 一元运算符、返回数据类型、对象创建、未定义值 |
+| * / %                              | 乘法、除法、取模                             |
+| + - +                              | 加法、减法、字符串连接                       |
+| << >> >>>                          | 移位                                         |
+| < <= > >=                          | 小于、小于等于、大于、大于等于               |
+| == != === !==                      | 等于、不等于、恒等、不恒等                   |
+| &                                  | 按位与                                       |
+| ^                                  | 按位异或                                     |
+| \|                                 | 按位或                                       |
+| &&                                 | 逻辑与                                       |
+| \|\|                               | 逻辑或                                       |
+| ?:                                 | 条件(三元运算)                               |
+| =                                  | 赋值                                         |
+| ,                                  | 多重求值                                     |
+
+```javascript
+var a = 42; 
+var b = "foo"; 
+var c = false; 
+var d = a && b || c ? c || b ? a : c && b : a; 
+d; // 42
+// 掌握了优先级和关联等相关知识之后，就能够根据组合规则将上面的代码分解如下：
+((a && b) || c) ? ((c || b) ? a : (c && b)) : a
+
+/*
+    (1) (a && b) 结果为 "foo" 。 
+    (2) "foo" || c 结果为 "foo" 。 
+    (3) 第一个 ? 中，"foo" 为真值。 
+    (4) (c || b) 结果为 "foo" 。 
+    (5) 第二个 ? 中，"foo" 为真值。 
+    (6) a 的值为 42 。 因此，最后结果为 42
+*/
+```
+
+
+
+# try...finally
+
+​	`finally`中的代码总是会在`try`之后执行，如果有`catch`的话则在`catch`之后执行，可以将finally中的代码看作是一个回调函数，无论出现什么情况，最后一定会被调用。
+
+```javascript
+// 如果try中有return语句，调用该函数并得到返回值的代码在finally前后执行的问题？
+// try执行完毕，接着执行finally，最后test()执行完毕，console.log()显示返回值
+function test() {
+    try {
+        return 'test';
+    }
+    finally {
+        console.log('finally');
+    }
+    console.log('never runs');
+}
+console.log(test());
+// finally
+// test
+
+// try 中 throw执行顺序同上
+function test2() {
+    try {
+        throw 2;
+    }
+    finally {
+        console.log('finally');
+    }
+    console.log('never runs');
+}
+console.log(test2());
+// finally
+// Uncaught Exception: 2
+
+// 如果finally中抛出异常，函数就会在finally终止，如果此前try中已经有return值，该值会被丢弃
+function test3() {
+    try {
+        return 3;
+    }
+    finally {
+        throw 'Oops!'
+    }
+    console.log('never runs');
+}
+console.log(test3());
+// Uncaught Exception: Oops!
+
+// 循环continue break也是一样
+for (var i = 0; i < 2; i++) {
+    try {
+        continue;
+    }
+    finally {
+        console.log(i);
+    }
+}
+// 0 1
+
+// finally 中的 return会覆盖 try 和 catch 中的 return 返回值
 ```
 
 
@@ -253,3 +458,13 @@ function peach (n) {
 
 
 主要考察对`内存管理`和`垃圾回收`机制的了解，公司会明文禁止使用递归，很危险，因为函数运行的时候会开启一块内存，递归运行需要大量开内存，虽然现在计算机的速度非常快，假设递归调用到达一亿次，将会在瞬间开启一大块内存，并且在瞬间释放掉，计算机将支撑不住；假设值发生故障，将会开启一串内存，最后可能程序就蓝屏或者死机了！
+
+# 已知的限制
+
+- 字符串常量中允许的最大字符数（并非只是针对字符串值）
+- 可以作为参数传递到函数中的数据大小（也称为栈大小，以字节为单位）
+- 函数声明中的参数个数
+- 未经优化的调用栈（例如递归）的最大层数，即函数调用链的最大长度
+- `JavaScript`程序以阻塞方式在浏览器中运行的最长时间（秒）
+- 变量名的最大长度
+

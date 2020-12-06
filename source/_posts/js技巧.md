@@ -7,7 +7,47 @@ tags:
     - javascript
 ---
 
-[5 Tips to Write Better Conditionals in JavaScript](https://mp.weixin.qq.com/s/3dBg86oVpt1_bFTqUhP1YQ)
+# 标签实现跳转
+
+```javascript
+foo: for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+        if (j == i) {
+            // 跳转到foo的下一个循环
+            continue foo;
+        }
+        if (j * i % 2 == 1) {
+            continue;
+        }
+        console.log(i, j);
+    }
+}
+// 1 0
+// 2 0
+// 2 1
+// 3 0
+// 3 2
+
+foo: for (var i = 0; i < 4; i++) {
+    for (var j = 0; j < 4; j++) {
+        if (i * j >= 3) {
+            console.log('stopping!', i, j);
+            break foo; // 跳出标签 foo 所在的循环 / 代码块，继续执行后面的代码
+        }
+        console.log(i, j);
+    }
+}
+// 0 0
+// 0 1
+// 0 2
+// 0 3
+// 1 0
+// 1 1
+// 1 2
+// stoping! 1 3
+```
+
+
 
 # 多重判断Array.includes
 
@@ -231,3 +271,16 @@ if (a.indexOf('e') === -1) {
 
 - 如果两边的值中有`true`或者`false`，不要使用`==`
 - 如果两边的值有`[]`、`""`或者`0`，不要使用`==`
+
+# 运算符短路
+
+​	&& || 如果左边的操作数能够得出结果，就可以忽略右边的操作数（执行最短路径）
+
+```javascript
+// a && b;
+// a 是假值，结果是false，不用判断b的值
+
+// a || b
+// a 是真值，结果就是a，不用判断b
+```
+

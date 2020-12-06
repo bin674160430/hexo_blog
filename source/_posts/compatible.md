@@ -272,3 +272,21 @@ a:link{}	a:visited{}	a:hover{}	a:active{}
 ​	ES5之前，没有第二个参数来指定转换的基数，会根据第一个字符来自行决定基数；
 如果第一个字符是x或者X，则转为十六进制数字；如果是0，则转为八进制数字。
 ​	从ES5开始，`parseInt()` 默认转换为十进制数
+
+# ES5-Shim
+
+https://github.com/es-shims/es5-shim
+
+一个完整的`shim/polyfill`集合，能够为项目提供`ES5`基本规范支持
+
+# ES6-Shim
+
+https://github.com/es-shims/es6-shim
+
+提供了对ES6基本规范的支持
+
+# Traceur
+
+https://github.com/google/traceur-compiler/wiki/GettingStarted
+
+实现旧语法之间的转换
