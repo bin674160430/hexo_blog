@@ -1337,3 +1337,113 @@ addEvent(div, 'click', function() {
     console.log(1);
 });
 ```
+
+# Promise
+
+> ​	`resolve()` 用于决议/完成`promise`，根据入参而定，如果参数是一个非`Promise`、非`thenable`的立即值，这个`promise`就会完成并直接返回该值；如果参数是一个真正的`Promise`或`thenable`值，这个值就会被传递展开，并且（要构造的）`promise`将取用其最终决议值或状态，不会有额外的开销。创建快捷方式Promise.resolve()。
+>
+> ​	`reject()` 拒绝这个`promise`，创建快捷方式`Promise.reject()`。
+>
+> ​	单决议：Promise最本质的一个特征——只能被决议一次（完成或拒绝）
+
+```javascript
+var fulfilledTh = {
+  then: function(cb) {
+    cb(1);
+  }
+};
+var rejectedTh = {
+  then: function(cb, errCb) {
+    errCb('0');
+  }
+};
+
+var p1 = Promise.resolve(fulfilledTh); // p1是完成(fulfilled)的promise
+var p2 = Promise.resolve(rejectedTh); // p2是拒绝(rejected)的promise
+```
+
+`Promise`有`then()`和`catch()`方法，通过这两个方法可以为这个`Promise`注册完成和拒绝处理函数
+
+## then
+
+​	接受两个参数，第一个用于完成回调，第二个用于拒绝回调，如果两者中的任何一个被省略或者作为非函数值传入的话，就会替换为相应的默认回调。（默认完成回调只是把消息传递下去，而默认拒绝回调只是重新抛出传播）其接收到的出错原因。
+
+## catch
+
+​	只接受一个拒绝回调作为参数，并自动替换默认完成回调，等价于`then(null, ...)`
+
+```javascript
+p.then(fulfilled);
+p.then(fulfilled, rejected);
+p.catch(rejected); // p.then(null, rejected);
+```
+
+## 其他API
+
+> ​	`Promise.all([...]);` 创建一个Promise返回值，只有传入的所有promise完成，返回promise才能完成；如果有任何promise被拒绝，返回的主promise就立即会被拒绝（抛弃任何其他promise的结果）；如果全部完成的话，就会得到一个数组，包含传入的所有promise的完成值。*（传入空数组会立即完成）*
+>
+> ​	`Promise.race([...]);` 只有第一个promise（完成或拒绝）取胜，并且其决议结果成为返回值。*（传入空数组会挂住，永远不会决议）*
+>
+> ```javascript
+> var p1 = Promise.resolve(1);
+> var p2 = Promise.resolve(2);
+> var p3 = Promise.reject('0');
+> 
+> Promise.race([p1, p2, p3])
+> 	.then(function(msg) {
+>   	console.log(msg); // 1		
+> 	});
+> 
+> Promise.all([p1, p2, p3])
+> 	.catch(function(err) {
+>   	console.error(err); // '0'
+> 	});
+> 
+> Promise.all([p1, p2])
+> 	.then(function(msgs) {
+>   	console.log(msgs); // [1, 2]
+> 	});
+> ```
+
+# Generator
+
+​	生成迭代器函数，定义函数前面加个`*`，第一个`next()`总是启动一个迭代器，并运行到`yeild`处；第二个`next()`调用完成第一个被暂停的`yeild`表达式，第三个`next()`调用完成第二个yeild表达式，以此类推。
+
+```javascript
+function *test(x) {
+  var y = x * (yield);
+  return y;
+}
+var it = test(2); // 传入2作为参数x
+it.next(); // 启动test, 执行到 var y = x * (yeild); 遇到yeild表达式暂停
+var res = it.next(3); // 调用yeild表达式，并将3赋予被暂停的yeild表达式的结果
+res.value; // 6, 2 * 3 = 6
+```
+
+```javascript
+function *test(x) {
+  var y = x * (yield 'Hello');
+  return y;
+}
+var it = test(1);
+var res = it.next(); // 第一个next，不传入参数
+res.value; // Hello
+res = it.next(2); // 向等待的yeild传入2
+res.value; // 2, 1*2=2
+```
+
+`yeild` 和 `next` 组合起来，在生成器的执行过程中构成了一个双向消息传递系统
+
+## iterable
+
+​	必须支持一个函数，函数名是`Symbol.iterator`，调用这个函数的时候，会返回一个迭代器。`for...of`循环自动调用它的`Symbol.iterator`函数来构建一个迭代器
+
+```javascript
+var a = [1,3,5,7,9];
+var it = a[Symbol.iterator]();
+it.next().value; // 1
+it.next().value; // 3
+it.next().value; // 5
+// ...
+```
+

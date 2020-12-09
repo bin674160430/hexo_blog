@@ -44,7 +44,7 @@ tags:
 
 `input:enabled`
 
-# c33有哪些新特性？
+# css3有哪些新特性？
 
 - css3实现圆角`border-radius`, 阴影`box-shadow`
 - 文字特效`text-shadow`，线性渐变`linear-gradient`，强制文本换行`word-wrap` 边框图片`border-image`
@@ -643,4 +643,15 @@ body {
 浮动元素、inline-block元素、绝对定位元素的margin不会和垂直方向上的其他元素的margin折叠
 
 创建了块级格式化上下文元素，不和它的子元素发生margin折叠，`overflow: hidden`
+
+# 文字超出N行部分缩略显示
+
+```css
+text-overflow: -o-ellipsis-lastline;
+overflow: hidden;
+text-overflow: ellipsis;
+display: -webkit-box;
+-webkit-line-clamp: 2;
+-webkit-box-orient: vertical;
+```
 
