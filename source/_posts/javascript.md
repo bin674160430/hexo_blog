@@ -13,11 +13,28 @@ tags:
 
 `===`为等同符，等号两边类型、值相同返回`true`，等号两边值类型不同或者值不同直接返回`false`
 
-`==` 为等值符，等号两边类型不同将自动转换成相同类型后比较值
+`==` 为等值符，等号两边类型不同将自动转换成相同类型后比较值，具体看下面表格
+
+| 类型x        | 类型y     | 结果                |
+| ------------ | --------- | ------------------- |
+| null         | undefined | true                |
+| 数字         | 字符串    | x == toNumber(y)    |
+| 布尔值       | 任何类型  | toNumber(x) == y    |
+| 字符串或数字 | 对象      | x == toPrimitive(y) |
+
+```javascript
+// 等号两边是boolean, string, number, 优先转换数字进行比较
+null == undefined // true
+30 == '30' // true, 类型不同，一个数值，一个字符串，字符串转数值再比较
+true == '1' // true, 任意值是boolean，需要转数值后再比较 true -> 1, false -> +0
+true == '42' // false, 布尔宽松原则， 这里 true -> 1, '42'转换还是42, 条件语句中避免使用 == Boolean
+'A' == true // false, true转成数字1, 'A'转成数字NaN, NaN == 1 -> false
+new Object() == '[object Object]' // true，对象与数值、字符串，把对象转成基础类型值再比较，利用toString或者valueOf, js 核心内置类，会尝试valueOf先于toString
+```
 
 ## 强制类型转换
 
-**ToString**
+**toString**
 
 ```javascript
 // ToString 负责处理非字符串到字符串的强制类型转换
@@ -46,16 +63,16 @@ b.toJSON = function() {
 JSON.stringify(b); // "{"b":1}"
 ```
 
-**ToNumber**
+**toNumber**
 
 ```javascript
 // 非数字值当做数字来使用，对字符串处理失败时返回NaN, 对以0开头的十六进制数并不按十六进制处理，而是十进制
 true; // 1
-false; // 0
+false; // +0
 undefined; // NaN
-null; // 0
+null; // +0
 // 对象（包括数组）会首先被转换为相应的基本类型值，如果返回的是非数字的基本类型值，则再遵循以上规则将其转换为数字
-// 为了将值转换为相应的基本类型值，抽象操作ToPrimitive会首先检查是否有valueOf()方法
+// 为了将值转换为相应的基本类型值，抽象操作toPrimitive会首先检查是否有valueOf()方法
 // 如果有且返回基本类型值，就使用该值进行强制类型转换，如果没有就使用toString()的返回值来进行强制类型转换
 // 如果valueOf()和toString()均不返回基本类型值，会产生TypeError错误
 var a = {
@@ -79,7 +96,7 @@ Number([]); // 0
 Number(["abc"]); // NaN
 ```
 
-**ToBoolean**
+**toBoolean**
 
 ```javascript
 // 1: true, 0: false
@@ -92,6 +109,10 @@ false;
 "";
 ```
 
+## toPrimitive
+
+​	如果对象的`valueOf()`的结果是基本数据类型，返回原始值；如果`toString()`返回基本数据类型，就返回该值；其它情况返回错误。优先调用`valueOf()`。
+
 ## +运算符会将操作数显示强制转为数字
 
 ```javascript
@@ -100,15 +121,6 @@ false;
 [1,2] + [3,4]; // "1,23,4", 数组valueOf()操作无法得到基本类型值，转而调用toString(), 变成了 "1,2"+"3,4"
 // - * / 会强制类型转换为数字，只适用于数组
 [3] - [1]; // 2
-```
-
-```javascript
-// 等号两边是boolean, string, number, 优先转换数字进行比较
-null == undefined // true
-30 == '30' // true, 类型不同，一个数值，一个字符串，字符串转数值再比较
-true == '1' // true, 任意值是boolean，需要转数值后再比较 true -> 1, false -> 0
-true == '42' // false, 布尔宽松原则， 这里 true -> 1, '42'转换还是42, 条件语句中避免使用 == Boolean
-new Object() == '[object Object]' // true，对象与数值、字符串，把对象转成基础类型值再比较，利用toString或者valueOf, js 核心内置类，会尝试valueOf先于toString
 ```
 
 

@@ -9,7 +9,7 @@ tags:
 
 # [es6的新特性](https://es6.ruanyifeng.com/)
 
-常用的有：`let, const`命令， `解构赋值`，`模版字符串`，`Set, Map`
+常用的有：`let, const`块级作用域， `解构赋值`，`模版字符串`，`Set, Map`，`箭头函数`，`函数的默认参数值`
 
 `var`变量可以在声明之前使用，值为 `undefined`
 
@@ -19,22 +19,22 @@ tags:
 
 ```javascript
 // es5只有全局作用域和函数作用域
-// 1. 内层变量可能覆盖外层变量
-var tmp = new Date();
-function f() {
-    console.log(tmp);
-    if (false) {
-        var tmp = 'hello world';
-    }
-}
-f(); // undefined
 
-// 2. 循环计数器变量泄露为全局变量, 如下面例子：循环结束后, i没有消失，泄露成了全局变量
-var s = 'hello';
-for (var i = 0; i < s.length; i++) {
-    console.log(s[i]);
+// 循环计数器变量泄露为全局变量, 如下面例子：循环结束后, i没有消失，泄露成了全局变量
+for (var i = 0; i < 10; i++) {
+    setTimeout(function() {
+        console.log(i); // 10，只会输出10
+    }, 0);
 }
-console.log(i); //5
+console.log(i); // 10
+
+// 换成下面方式， j在let声明之后，生成一块作用域，只在该作用域下有效
+for (let j = 0; j < 10; j++) {
+    setTimeout(function() {
+        console.log(j); // 0,1,2,3,4,5,6,7,8,9
+    }, 0);
+}
+console.log(j); // ReferenceError: j is not defined
 ```
 
 ## const
@@ -45,7 +45,7 @@ console.log(i); //5
 
 `块级作用域`，必须有大括号，如果没有大括号，`javascript引擎`就认为不存在块级作用域
 
-## 变量的结构赋值，结构不成功等于 undefined
+## 变量的解构赋值，结构不成功等于 undefined
 
 ```javascript
 // 数组层级、下边位置对应
@@ -85,4 +85,18 @@ let [x1, y1, ...z1] = 'ab'; // x1 = 'a', y1 = 'b', z1 = []
 let name = "Bob", time = "today";
 `Hello ${name}, how are you ${time}?`
 ```
+
+## 箭头函数
+
+```javascript
+function circleArea(r) {
+    return 3.14 * r * r;
+}
+
+const circleArea = r => 3.14 * r * r;
+```
+
+
+
+## 声明展开和剩余参数
 
