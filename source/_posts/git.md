@@ -27,6 +27,18 @@ git config --help
 git help config
 ```
 
+# SSH
+
+https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
+```shell
+ssh-keygen -t ed25519 -C "your_email@example.com"
+# 一路按 enter 即可
+
+# 切换 ssh地址
+git remote set-url origin git@github.com:someaccount.git
+```
+
 # 初始化
 
 ```shell
