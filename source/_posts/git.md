@@ -7,15 +7,22 @@ tags:
     - git
 ---
 
-# git常用命令
+git命令基本都有提示，更有--help强大的查看帮助说明
+
+https://git-scm.com/book/zh/v2
+
+# 初始化
 
 ```shell
-# 进入目录 folder
 # 建立git库
 git init
+```
 
-# 设置基础信息
-git config -l # 看一下当前的设置
+# 基础信息
+
+```shell
+# 查看当前的设置
+git config -l 
 git config --global user.name "username"
 git config --global user.eamil "xxemial@gmail.com"
 git config --global color.ui true
@@ -23,16 +30,27 @@ git config --global color.ui true
 # 查看git命令
 git config --help
 git help config
+```
 
+# 创建文件到索引区流程
+
+```shell
 # 新建一个文件 index.html
-# 本地工作文件夹状态确认
+# 执行git status查看本地工作文件夹状态
 git status
+# 可以看到有个提示 use "git add <file>.." to include in what will be committed
+#					(红色字体)index.html
+
 # 把文件加到索引区
 git add	index.html
+
 # 再次查看本地工作文件夹内容
 git status
+# 可以看到提示(绿色字体)new file: index.html
+
 # 将索引区内容提交到本地库, -m 后面表示本次递交到本地库的说明
 git commit -m "create index.html"
+
 # 查看提交历史, --oneline一行查看，索引号缩略
 git log --oneline
 # 查看最近的几次
@@ -41,31 +59,44 @@ git log --oneline -2
 # 详细显示
 git log -p
 git log --help
+```
 
-# 给index.html添加一段内容
-# 查看文件状态，modified: index.html 修改过
+# 还原文件
+
+```shell
+# 给index.html添加一段内容content...
+# 查看文件状态
 git status
+# modified: index.html 修改过文件
+
 # 恢复文件到以前的状态, 之前添加的内容消失了
-git checkout -- index.html
+git restore index.html
+# 或者 git checkout -- index.html
+
 # 如果在checkout之前，修改的内容已经添加到索引区了
 # 继续在index.html添加一段内容
 # 查看文件状态，红色 modified: index.html
 git status
 # 加入到索引区
 git add .
-# 再查看状态，绿色的 modified: index.html
-# 无法使用 checkout 恢复文件，因为文件已经加入索引区了
-git checkout -- index.html # 无效
+# 再查看状态，modified: index.html
+# 继续执行 restore 或者 checkout， 发现没有效果，无法恢复文件，文件已经加入索引区了
+git restore index.html # git checkout -- index.html # 无效
+
 # 将文件从头部退出索引区
-git reset HEAD index.html
-# 再次使用checkout恢复文件初始状态, 添加的内容消失
-git checkout -- index.html
+git restore --staged index.html # 或 git reset HEAD index.html
 
+# 再次使用恢复文件初始状态, 添加的内容消失
+git restore index.html # 或 git checkout -- index.html
+```
 
+# 对比改动
+
+```shell
 # 比较修改内容 git diff [--cached]
-# 先为文件添加一段内容，查看状态，红色 modified: index.html 有修改
+# 先为文件添加一段内容，查看状态，modified: index.html 有修改
 git status
-# 对比修改的内容，添加了一段内容
+# 对比修改的内容，添加了一段内容，对比未添加到索引区之前的
 git diff
 # 加入索引区
 git add .
@@ -75,67 +106,66 @@ git status
 git diff
 # 索引区都能比较
 git diff --cached
+```
 
+# 文件操作
 
-
+```shell
 # 文件操作
 git add [file1 file2 ...] # 指定文件添加到索引区
 git add . # 所有目录包括子目录的内容都添加到索引区
-git rm [--cached] # 删除文件， 如果文件已经提交到索引区了，需要从索引区里删除，要使用 git rm --cached
+git rm <file> [--cached] # 删除文件， 如果文件已经提交到索引区了，需要从索引区里删除，要使用 git rm --cached
 git mv # 移动文件，更多的是用来改文件名
+```
 
+# reset
 
+​	`git reset --hard HEAD[~n]` n代表从当前尖端指向的位置开始计算，往前第N位
 
+​	{% image commit-reset.png %}
 
-
-# 更新最后一次提交
-git commit -m "commit message"
-# 追加文件到上一次提交记录，不会产生多一条commit记录
-git commit --amend
-# 追加文件到上一次提交记录并且添加一条提示信息
-git commit -am "commit message" [--amend]
-
-# index.html 添加一行`ok... `, 添加到索引区，commit
-git add .
-git status # 查看文件状态
-git commit -m "create ok..." # 提交
-git log -1 # 查看最近一次提交记录信息
-# 上面在添加`ok... `的时候，末尾多了个空格，现在删掉空格
-# 查看状态，存在修改，添加到索引区
-git add .
-# git commit -m "remove ", 再用 git log 查看会生成一条commit记录，实际上这点小改动是补充之前commit的缺漏而已，没必要单独commit一条记录出来
-# 使用 git commit --amend 追加到上一次提交记录，相当于合并到上一次commit(create ok...)中
-git commit --amend
-
-
-
-
-
-
-# 返回过去
+```shell
 git reset --hard HEAD # 硬往过去返回最后一次提交
 git reset --hard HEAD~
-git reset --hard HEAD~n
+git reset --hard HEAD~n # 根据当前指向的尖端看重置到第几次
+
+# 加入reset错了，想重新设置回去，但有不确定commit_id是多少，可以使用
+git reflog [-n] # 查看最近几条操作记录，找到commit对应的id
 git reset --hard [commit_id] # 回到commit对应的id那条记录
-git reflog [-n num] # 返回未来，-n是最近的几条操作记录
 
+# 或者使用revert，commit_id的被撤销，产生一个新的commit
+git revert -n [commit_id]
+# reset 将HEAD指向制定提交，历史记录不会出现放弃的提交记录，但是操作记录reflog还是可以找到
+# revert 放弃commit_id的修改，会生成一次新的提交，以前的历史记录都在
+# 操作完之后，用git log可以明显看到区别
+```
 
+# branch & merge
 
+​	{% image merge.png %}
 
-# 分支
+```shell
 # 查看分支
 git branch
-# 创建dev分支
+# 创建dev分支，在当前的分支上创建出一条分支, 这里是 master => dev
 git branch dev
 # 切换到dev分支
 git checkout dev
+# 提交点东西
+git add .
+git commit -m "branch dev add some content"
 
-# 合并分支, 指定branch name合并到当前所在的分支
-git merge [branch name]
-# 删除分支
-git branch -d [name]
+# 准备合并到master分支，先切换到master分支
+git checkout master
+# 合并分支, 将dev合并到master
+git merge dev
+# 删除分支 dev
+git branch -d dev
+```
 
+# tag
 
+```shell
 # 版本管理
 git tag [1.0.0]
 # NNN.nnn.mmm
@@ -145,17 +175,54 @@ git tag [1.0.0]
 
 # 查看版本发布的tag
 git show [1.0.0]
+```
 
+# clone & push
 
-
-
-
+```shell
 # 把远程库克隆到本地文件夹
 git clone [url]
+# 推送到远程库
 git push [origin][master]
 ```
 
+# git忽略文件
 
+`.gitignore`文件中设置忽略的文件   https://git-scm.com/docs/gitignore
+
+```shell
+# 例如忽略node包node_modules/, 忽略.log后缀的文件
+node_modules/
+*.log
+```
+# 创建新的commit来替换当前commit的尖端(HEAD)
+
+​	假如修改了一段代码，`git commit`, 当前commit的尖端(HEAD)会指向最新`commit`的记录；我想继续添加代码，但不想在`commit`的时候会有多一条`commit`记录，那么可以使用`git commit --amend`来和尖端的`commit`合并创建出一条新的`commit`并替换当前`commit`的尖端，已达到`commit`记录一条的目的。
+
+```shell
+# 新建一个文件 first.html, 并添加到索引区，commit
+git add .
+git commit -m 'new first.html'
+# 新的first.html，忘记写内容了，现在补上<h1>first features..</h1>，添加到索引区
+git add .
+# 更新最后一次提交
+git commit --amend
+# git终端界面会提示输入内容
+new first.html # 这是上一次commit的message，可以修改，最后将以这个message为准，与尖端(HEAD)commit合并，创建一个新的commit来替换尖端(HEAD)commit
+# 修改完之后，可以按下ESC+Shift，再按两下Z退出
+git log --oneline
+# 可以看到，尖端的commit被替换新的commit替换掉了！而且没有两个commit
+```
+
+实际上相当于
+
+```shell
+$ git reset --soft HEAD^
+$ ... do something else to come up with the right tree ...
+$ git commit -c ORIG_HEAD
+```
+
+想要到达真正意义上的合并`commit`，请参考下面`rebase`
 
 # rebase
 
@@ -173,20 +240,3 @@ fixup：将该commit和前一个commit合并，但我不要保留该提交的注
 exec：执行shell命令（缩写:x）
 drop：我要丢弃该commit（缩写:d）
 ```
-
-
-
-# git忽略文件
-
-`.gitignore`文件中设置忽略的文件
-
-```shell
-# 例如忽略node包node_modules/, 忽略.log后缀的文件
-node_modules/
-*.log
-```
-
-
-
-https://git-scm.com/docs/gitignore
-

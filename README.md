@@ -8,9 +8,9 @@ yarn global add hexo-cli
 
 
 ```
-hexo g        #完整命令为hexo generate，生成静态文件
-hexo s        #完整命令为hexo server，启动服务器，用来本地预览
-hexo d        #编译发布
+hexo g           #完整命令为hexo generate，生成静态文件
+hexo s [-p 3000] #完整命令为hexo server，启动服务器，用来本地预览
+hexo d           #编译发布
 ```
 
 # 编写方式
