@@ -11,14 +11,9 @@ git命令基本都有提示，更有--help强大的查看帮助说明
 
 https://git-scm.com/book/zh/v2
 
-# 初始化
+https://www.yiibai.com/git/git-quick-start.html
 
-```shell
-# 建立git库
-git init
-```
-
-# 基础信息
+# Git使用前设置
 
 ```shell
 # 查看当前的设置
@@ -30,6 +25,13 @@ git config --global color.ui true
 # 查看git命令
 git config --help
 git help config
+```
+
+# 初始化
+
+```shell
+# 建立git库
+git init
 ```
 
 # 创建文件到索引区流程
@@ -61,6 +63,16 @@ git log -p
 git log --help
 ```
 
+# add
+
+```shell
+git add . # 将所有修改添加到暂存区
+git add * # Ant风格添加修改
+git add *Controller # 将以Controller结尾的文件的所有修改添加到暂存区
+git add Hello* # 将所有以Hello开头的文件的修改添加到暂存区
+git add Hello? # 将以Hello开头后面只有一位的文件的修改提交到暂存区，如 Hello1.txt
+```
+
 # 还原文件
 
 ```shell
@@ -83,7 +95,7 @@ git add .
 # 继续执行 restore 或者 checkout， 发现没有效果，无法恢复文件，文件已经加入索引区了
 git restore index.html # git checkout -- index.html # 无效
 
-# 将文件从头部退出索引区
+# 将文件从头部退出索引区 staged === cached
 git restore --staged index.html # 或 git reset HEAD index.html
 
 # 再次使用恢复文件初始状态, 添加的内容消失
@@ -177,14 +189,116 @@ git tag [1.0.0]
 git show [1.0.0]
 ```
 
-# clone & push
+# 远程仓库
+
+​	`git clone <版本库地址> <本地目录名>`
+​	该命令会在本地生成一个目录，与远程主机的版本库同名。如果要指定不同的目录名，可以将目录名作为`git clone`命令的第二个参数
 
 ```shell
-# 把远程库克隆到本地文件夹
-git clone [url]
-# 推送到远程库
-git push [origin][master]
+# 把远程库克隆到本地文件夹, clone会自动添加远程仓库并默认为 origin 
+git clone <版本库地址> <本地目录名>
+# 推送到远程库, 假如推送 master 分支到 origin => git push origin master
+git push [remote-name][branch-name]
+# 跟新所有分支
+git fetch [remote-name]
+
+# git fetch git://git.kernel.org/pub/scm/git/git.git maint
+# 取回orgin主机的master分支
+git fetch origin master
+
+# 取回远程主机的某个分支的更新，再与本地的制定分支合并
+git pull <远程主机名> <远程分支名>:<本地分支名>
+
+# 查看远程仓库
+git remote show [remote-name]
+
+# 远程仓库重命名, 例如将 gs 重命名为 newgs
+git remote rename gs newgs
+
+# 删除远程仓库
+git remote rm newgs
 ```
+
+## fetch
+
+​	`git fetch <远程主机名> <分支名>` , 更新远程跟中分支
+
+```shell
+# 从远程 refs/heads/ 命名空间复制所有分支，并将它们存储到本地的 refs/remotes/origin/ 命名空间
+git fetch origin
+
+# 取回 origin 主机的 master 分支
+git fetch origin master
+```
+
+## pull
+
+​	`git pull <远程主机名> <远程分支名>:<本地分支名>`
+​	取回远程库某个分支的更新，再与本地指定的分支合并。
+​	默认情况下, git pull 是 `git fetch,` `git merge FETCH_HEAD` 的缩写。如果使用--rebase，运行`git rebase`而不是`git merge`
+
+```shell
+# 要取回origen主机的dev分支，与本地的master分支合并
+git pull origin dev:master
+
+# 如果远程分支 dev 要与当前分支合并，冒号后面的部分可以省略，如下命令
+git pull origin dev
+# 上面命令标识，取回 origin/dev 分支，再与当前分支合并，等同于先执行 git fetch ， 再执行 git merge
+
+# git clone 的时候，所有本地分支默认与远程主机的同名分支，建立追踪关系
+# 本地的master分支自动追踪 origin/master 分支
+# 存在追踪关系的，git pull 就可以省略远程分支名，执行 git pull origin 即可
+# git允许手动建立追踪关系
+git branch --set-upstream master origin/dev
+
+# 如果合并需要采用rebase模式，使用--rebase
+git pull --rebase <远程主机名> <远程分支名>:<本地分支名>
+```
+
+## push
+
+​	`git push <远程主机名> <远程分支名>:<本地分支名>`
+​	将本地分支的更新，推送到远程主机，格式与 `git pull` 相似
+
+```shell
+# 将本地 master 分支推送到 origin 主机的 master 分支，如果master不存在，则会被新建
+git push origin master
+
+# 如果省略本地分支名，则标识删除指定的远程分支，这等同于推送一个空的本地分支到远程分支
+git push origin :master
+# 等同于, 表示删除 origin 主机的 master 分支
+git push origin --delete master
+
+# 强推
+git push --force origin
+
+# 将当前分支推送到远程的同名简单方法
+git push origin HEAD
+
+# 用本地分支 brahch-3 覆盖远程分支 branch-1
+git push -f origin branch-3:refs/branch-1
+# 或者
+git push origin :refs/branch-1 # 删除远程的branch-1分支
+git push origin branch-3:refs/branch-1
+
+# git push 不会推送标签 tag ， 除非使用 -tags 参数
+git push origin --tags
+# 推送tag
+git push origin tag_name
+# 删除远程标签
+git push origin :tag_name
+```
+
+## remote
+
+​	管理一组跟踪的存储库
+
+```shell
+# 不带参数，列出已经存在的远程分支, -v 列出详细信息，每个名字后面列出url
+git remote [-v]
+```
+
+
 
 # git忽略文件
 
@@ -195,7 +309,9 @@ git push [origin][master]
 node_modules/
 *.log
 ```
-# 创建新的commit来替换当前commit的尖端(HEAD)
+# 创建新的commit来
+
+# 替换当前commit的尖端(HEAD)
 
 ​	假如修改了一段代码，`git commit`, 当前commit的尖端(HEAD)会指向最新`commit`的记录；我想继续添加代码，但不想在`commit`的时候会有多一条`commit`记录，那么可以使用`git commit --amend`来和尖端的`commit`合并创建出一条新的`commit`并替换当前`commit`的尖端，已达到`commit`记录一条的目的。
 
@@ -205,7 +321,7 @@ git add .
 git commit -m 'new first.html'
 # 新的first.html，忘记写内容了，现在补上<h1>first features..</h1>，添加到索引区
 git add .
-# 更新最后一次提交
+# 更新最后一次提交, 最终只有一个commit， commit --amend 会代替前面commit
 git commit --amend
 # git终端界面会提示输入内容
 new first.html # 这是上一次commit的message，可以修改，最后将以这个message为准，与尖端(HEAD)commit合并，创建一个新的commit来替换尖端(HEAD)commit
@@ -226,7 +342,7 @@ $ git commit -c ORIG_HEAD
 
 # rebase
 
-目前gitdesktop仅支持rebase current branch
+​	在另一个分支基础智商重新应用，用于把一个分支的修改合并到当前分支
 
 ```shell
 git rebase -i  [startpoint]  [endpoint]
@@ -239,4 +355,35 @@ squash：将该commit和前一个commit合并（缩写:s）
 fixup：将该commit和前一个commit合并，但我不要保留该提交的注释信息（缩写:f）
 exec：执行shell命令（缩写:x）
 drop：我要丢弃该commit（缩写:d）
+
+# 修改完之后，可以按下ESC+Shift，再按两下Z退出
 ```
+
+​	实例：
+
+```shell
+# 现在基于远程分支 origin, 创建一个 mywork 分支
+git checkout -b mywork origin
+# 添加两个文件，生成两次commit
+# 创建 a.html, git add .
+git commit -m 'create a.html'
+# 创建 b.html, git add .
+git commit -m 'create b.html'
+
+# 在这个时候， origin 分支也有其他人在 commit，这就意味着 origin 和 mywork 两个分支各自开发重
+# pull 拉取 origin 分支的修改并和当前的修改合并，结果看起来就像一个新的 merge commit
+# 如果想让 mywork 分支历史看起来像没有经过合并一样，也可以用 git rebase，如下所示：
+git checkout mywork
+git rebase origin
+# 会把 mywork 分支里的每个 commit 取消掉，并且把它们临时保存为补丁patch，这些补丁放到 .git/rebase目录
+# 然后把 mywork，分支更新到最新 origin 分支，最后把保存的补丁应用到 mywork 分支上
+# 当 mywork 分支更新之后，它会指向这些新创建的提交commit，而那些老的提交会被丢弃
+# 在 rebase 的过程中，也许会出现冲突，git会停止 rebase 并会让你去解决冲突；
+# 在解决完冲突后，用 git add 命令去更新这些内容的索引
+# 无需执行 git commit只要执行
+git rebase --continue
+# 这样git会继续应用apply余下的补丁
+# 在任何时候，可以用 --abort 参数来终止 rebase 的操作，并且 mywork 分支会回到 rebase 开始前的状态
+git rebase --abort
+```
+
