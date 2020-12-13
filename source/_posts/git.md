@@ -171,6 +171,8 @@ git revert -n [commit_id]
 ```shell
 # 查看分支
 git branch
+# 查看本地分支和远程分支
+git branch -a
 # 创建dev分支，在当前的分支上创建出一条分支, 这里是 master => dev
 git branch dev
 # 切换到dev分支
