@@ -187,6 +187,9 @@ git checkout master
 git merge dev
 # 删除分支 dev
 git branch -d dev
+
+# 拉取远程分支并创建本地分支，自动切换到该分支
+git checkout -b 本地分支branch_x origin/远程分支名name
 ```
 
 # tag
@@ -220,6 +223,9 @@ git fetch [remote-name]
 # 取回orgin主机的master分支
 git fetch origin master
 
+# 拉取远程分支并创建本地分支
+git fetch origin 远程分支名name:本地分支branch_x
+
 # 取回远程主机的某个分支的更新，再与本地的制定分支合并
 git pull <远程主机名> <远程分支名>:<本地分支名>
 
@@ -249,7 +255,7 @@ git fetch origin master
 
 ​	`git pull <远程主机名> <远程分支名>:<本地分支名>`
 ​	取回远程库某个分支的更新，再与本地指定的分支合并。
-​	默认情况下, git pull 是 `git fetch,` `git merge FETCH_HEAD` 的缩写。如果使用--rebase，运行`git rebase`而不是`git merge`
+​	默认情况下, git pull 是 `git fetch,` `git merge FETCH_HEAD` 的缩写。如果使用`--rebase`，运行`git rebase`而不是`git merge`
 
 ```shell
 # 要取回origen主机的dev分支，与本地的master分支合并
