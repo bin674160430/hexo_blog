@@ -336,4 +336,177 @@ p1.then(baz1, oopsBaz1); // baz1
 
 ## 具有then方法的鸭子模型
 
-​	识别`Promise`就是定义某种成为`thenable`的东西，任何具有then()方法的对象和函数，就是Promise一致的`thenbale`，当`Promise`调用then的时候，即使这个`Promise`已经决议，提供给`then`的回调也总是会被异步调用。
+​	识别`Promise`就是定义某种成为`thenable`的东西，任何具有then()方法的对象和函数，就是Promise一致的`thenbale`，当`Promise`调用`then`的时候，即使这个`Promise`已经决议，提供给`then`的回调也总是会被异步调用。
+
+## 链式流程控制可行的Promise固有特性
+
+- 调用`Promise`的`then()`会自动创建一个新的`Promise`从调用返回
+- 在完成或拒绝处理函数内部，如果返回一个值或者抛出一个异常，新返回的（可链接的）`Promise`就相应地决议
+- 如果完成或拒绝处理函数返回一个`Promise`，它将会被展开，这样一来，不管它的决议值是什么，都会成为当前`then()`返回的链接`Promise`的决议值
+
+## new Promise(...)
+
+​	接受两个函数`(resolve, reject)`回调，用以支持`promise`决议。
+​	`resolve()`既可能完成`promise`，也可能拒绝，根据传入的参数而定，如果传入的是一个非`promise`、非`thenable`的立即值，这个`promise`就会完成；如果是一个`promise`、`thenable`，这个值会被递归展开，并且`promise`将取用其最终决议值或状态。
+​	`reject()`拒绝`promise`。
+
+## resolve
+
+​	`Promise.resolve()`会将传入的真正Promise直接返回，对传入的`thenable`则会展开，假如`thenable`展开得到一个拒绝状态，那么从`Promise.resolve()`返回的`Promise`实际上就是这同一个拒绝状态；所以它实际的结果可能是完成或拒绝。
+
+```javascript
+var rejectedTh = {
+  then: function() {
+    rejected("Oops");
+  }
+};
+var rejectedPr = Promise.resolve(rejectedTh);
+
+var rejectedPr1 = new Promise(function(resolve, reject) {
+  // 用一个被拒绝的promise完成这个promise
+  resolve(Promise.reject("Oops"));
+});
+rejectedPr1.then(
+	function fulfiled() {
+    // 不会执行到这里，promise已经是reject
+  },
+  function rejected(err) {
+    console.log(err); // Oops
+  }
+);
+```
+
+## reject
+
+`reject()`不会像`resolve()`一样进行展开，如果向`reject()`传入一个`Promise/thenable`值，它就会把这个值原封不动地设置为拒绝理由，后续的拒绝函数接收到的是你实际转给`reject()`的那个`Promise/thenable`，而不是其底层的立即值。
+
+## es6规范命名onFulfilled, onRejected
+
+```javascript
+// resolve不太准确
+function onFulfilled() {
+  
+}
+function onRejected() {
+  
+}
+new Promise(onFulfilled, onRejected);
+```
+
+## 错误处理
+
+`try...catch`只能是同步的，无法用于异步代码模式
+
+```javascript
+var p = Promise.resolve(1);
+p.then(
+	function fulfilled(msg) {
+    // number 没有 sring函数，抛出异常
+  	console.log(msg.toLowerCase()); 
+  }
+)
+.catch(function(err) {
+  
+});
+// 以catch结束
+```
+
+## then(...) 
+
+​	为`promise`注册完成和拒绝处理函数。接受两个参数，第一个用于完成回调，第二个用于拒绝回调。如果两个参数中的任何一个被省略或者作为非函数值传入的话，就会替换为响应的默认回调。默认完成回调只是把消息传递下去，而默认拒绝回调只是重新抛出（传播）其接收到的出错原因。
+
+## catch(...)
+
+​	catch只接受一个拒绝回调参数，并自动替换默认完成回调。
+​	等价于`then(null, ..)`
+
+then()和catch()也会创建并返回一个promise，可以用于实现promise链式流程。
+
+## Promise.all([...])
+
+​	只有传入的所有`promise`都完成，返回`promise`才能完成，并得到一个数组，包含所有传入`promise`的完成值；
+一旦有一个拒绝，就会得到这个拒绝的`promise`的值。
+
+## Promise.race([...])
+
+​	只要有一个`promise`决议，`Promise.race()`就会被决议。
+
+```javascript
+// 1. 超时处理
+Promise.race([
+  request(), // 网络请求
+  timeourPromise(3000) // 3秒限时
+])
+.then(
+	function() {
+    // request 在3秒内完成
+  },
+  function(err) {
+    // 要么 request 被拒绝，要么超时
+  }
+);
+```
+
+## Promise.any([...])
+
+​	与all类似，但是会忽略拒绝，只要有一个完成。
+
+## Promise.reject()
+
+​	创建一个已被拒绝的`promise`的快捷方式
+
+```javascript
+// p1 和 p2是相同的
+var p1 = new Promise(function(resolve, reject) {
+  reject("Oops");
+});
+var p2 = Promise.reject("Oops");
+```
+
+## Promise.resolve()
+
+​	创建一个已完成的promise，由于Promise.resolve()也能展开thenable值，在这种情况下，返回的promise采用传入的这个thenable的最终决议值，可能完成，可能拒绝。
+​	如果传入的是promise，Promise.resolve()什么都不会做，只会直接把这个值返回，不会有额外的开销。
+
+```javascript
+var fulfilledTh = {
+  then: function(cb) { cb(1); }
+};
+var rejectedTh = {
+  then: function(cb, errCb) {
+    errCb("Oops");
+  }
+};
+
+var p1 = Promise.resolve(fulfilledTh); // p1是完成的promise
+var p2 = Promise.resolve(rejectedTh); // p2是拒绝的promise
+```
+
+```javascript
+// ajax 转换为promise
+if (!Promise.wrap) {
+  Promise.wrap = function(fn) {
+    return function() {
+      var args = [].slice.call(arguments);
+      return new Promise(function(resolve, reject) {
+        fn.apply(
+        	null,
+          args.concat(function (err, v) {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(v);
+            }
+          });
+        );
+      });
+    }
+  }
+}
+
+var request = Promise.wrap(ajax);
+request('url')
+.then(..)
+..
+```
+
