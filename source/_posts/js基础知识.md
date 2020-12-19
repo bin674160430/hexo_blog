@@ -71,7 +71,7 @@ console.log(a); // 1
 javascript引擎会在代码执行前对其进行编译，在这个过程中，像`var a = 2`这样的声明会被分解成两个独立的步骤：
 
 	1. 首先，`var a` 在其作用于中声明新变量，这会在最开始的阶段，也就是代码执行前进行
- 	2. 接下来，`a = 2`会查询（LHS）变量a并对其进行赋值
+	2. 接下来，`a = 2`会查询（LHS）变量a并对其进行赋值
 
 LHS和RHS查询都会在当前执行作用域中开始，如果没有找到所需的标识符，就会向上级作用于继续查找目标标识符，最后到达全局作用域，终止于全局作用域
 
@@ -381,9 +381,9 @@ func(3, 4);
 ## 判断this
 
 	1. 如果是`new`调用，绑定到新建的对象
- 	2. 由`call`、`apply`、`bind`调用，绑定到制定对象
- 	3. 由上下文对象调用，绑定到那个上下文
- 	4. 默认：严格模式下绑定到`undefined`，否则绑定到全局对象
+	2. 由`call`、`apply`、`bind`调用，绑定到制定对象
+	3. 由上下文对象调用，绑定到那个上下文
+	4. 默认：严格模式下绑定到`undefined`，否则绑定到全局对象
 
 ```javascript
 // 1. new调用，this绑定新创建的对象 bar 
@@ -443,9 +443,9 @@ a1.constructor === Object; // true
 ​	new调用函数，发生构造函数调用时，会自动执行下面操作
 
 	1. 创建一个全新的对象
- 	2. 这个新对象会被执行**原型**连接
- 	3. 这个新对象会绑定到函数调用的`this`
- 	4. 如果函数没有返回其他对象，那么`new`表达式中的函数调用会自动返回这个新对象
+	2. 这个新对象会被执行**原型**连接
+	3. 这个新对象会绑定到函数调用的`this`
+	4. 如果函数没有返回其他对象，那么`new`表达式中的函数调用会自动返回这个新对象
 
 # ø创建空对象
 
@@ -1337,113 +1337,3 @@ addEvent(div, 'click', function() {
     console.log(1);
 });
 ```
-
-# Promise
-
-> ​	`resolve()` 用于决议/完成`promise`，根据入参而定，如果参数是一个非`Promise`、非`thenable`的立即值，这个`promise`就会完成并直接返回该值；如果参数是一个真正的`Promise`或`thenable`值，这个值就会被传递展开，并且（要构造的）`promise`将取用其最终决议值或状态，不会有额外的开销。创建快捷方式Promise.resolve()。
->
-> ​	`reject()` 拒绝这个`promise`，创建快捷方式`Promise.reject()`。
->
-> ​	单决议：Promise最本质的一个特征——只能被决议一次（完成或拒绝）
-
-```javascript
-var fulfilledTh = {
-  then: function(cb) {
-    cb(1);
-  }
-};
-var rejectedTh = {
-  then: function(cb, errCb) {
-    errCb('0');
-  }
-};
-
-var p1 = Promise.resolve(fulfilledTh); // p1是完成(fulfilled)的promise
-var p2 = Promise.resolve(rejectedTh); // p2是拒绝(rejected)的promise
-```
-
-`Promise`有`then()`和`catch()`方法，通过这两个方法可以为这个`Promise`注册完成和拒绝处理函数
-
-## then
-
-​	接受两个参数，第一个用于完成回调，第二个用于拒绝回调，如果两者中的任何一个被省略或者作为非函数值传入的话，就会替换为相应的默认回调。（默认完成回调只是把消息传递下去，而默认拒绝回调只是重新抛出传播）其接收到的出错原因。
-
-## catch
-
-​	只接受一个拒绝回调作为参数，并自动替换默认完成回调，等价于`then(null, ...)`
-
-```javascript
-p.then(fulfilled);
-p.then(fulfilled, rejected);
-p.catch(rejected); // p.then(null, rejected);
-```
-
-## 其他API
-
-> ​	`Promise.all([...]);` 创建一个Promise返回值，只有传入的所有promise完成，返回promise才能完成；如果有任何promise被拒绝，返回的主promise就立即会被拒绝（抛弃任何其他promise的结果）；如果全部完成的话，就会得到一个数组，包含传入的所有promise的完成值。*（传入空数组会立即完成）*
->
-> ​	`Promise.race([...]);` 只有第一个promise（完成或拒绝）取胜，并且其决议结果成为返回值。*（传入空数组会挂住，永远不会决议）*
->
-> ```javascript
-> var p1 = Promise.resolve(1);
-> var p2 = Promise.resolve(2);
-> var p3 = Promise.reject('0');
-> 
-> Promise.race([p1, p2, p3])
-> 	.then(function(msg) {
->   	console.log(msg); // 1		
-> 	});
-> 
-> Promise.all([p1, p2, p3])
-> 	.catch(function(err) {
->   	console.error(err); // '0'
-> 	});
-> 
-> Promise.all([p1, p2])
-> 	.then(function(msgs) {
->   	console.log(msgs); // [1, 2]
-> 	});
-> ```
-
-# Generator
-
-​	生成迭代器函数，定义函数前面加个`*`，第一个`next()`总是启动一个迭代器，并运行到`yeild`处；第二个`next()`调用完成第一个被暂停的`yeild`表达式，第三个`next()`调用完成第二个yeild表达式，以此类推。
-
-```javascript
-function *test(x) {
-  var y = x * (yield);
-  return y;
-}
-var it = test(2); // 传入2作为参数x
-it.next(); // 启动test, 执行到 var y = x * (yeild); 遇到yeild表达式暂停
-var res = it.next(3); // 调用yeild表达式，并将3赋予被暂停的yeild表达式的结果
-res.value; // 6, 2 * 3 = 6
-```
-
-```javascript
-function *test(x) {
-  var y = x * (yield 'Hello');
-  return y;
-}
-var it = test(1);
-var res = it.next(); // 第一个next，不传入参数
-res.value; // Hello
-res = it.next(2); // 向等待的yeild传入2
-res.value; // 2, 1*2=2
-```
-
-`yeild` 和 `next` 组合起来，在生成器的执行过程中构成了一个双向消息传递系统
-
-## iterable
-
-​	必须支持一个函数，函数名是`Symbol.iterator`，调用这个函数的时候，会返回一个迭代器。`for...of`循环自动调用它的`Symbol.iterator`函数来构建一个迭代器
-
-```javascript
-var a = [1,3,5,7,9];
-var it = a[Symbol.iterator]();
-it.next().value; // 1
-it.next().value; // 3
-it.next().value; // 5
-// ...
-```
-
