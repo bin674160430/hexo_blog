@@ -177,6 +177,8 @@ git branch -a
 git branch dev
 # 切换到dev分支
 git checkout dev
+# 切换分支放弃当前分支的修改
+git checkout -f dev
 # 提交点东西
 git add .
 git commit -m "branch dev add some content"
@@ -191,6 +193,21 @@ git branch -d dev
 # 拉取远程分支并创建本地分支，自动切换到该分支
 git checkout -b 本地分支branch_x origin/远程分支名name
 ```
+
+## 切换分支的时候暂存修改
+
+```shell
+git stash # 暂存分支的修改
+git stash list # 查看所有stash的数据
+git stash apply # 恢复最近一次暂存的修改
+git stash apply stash@{2} # 恢复索引stash@{2}对应的暂存修改
+git stash apply --index # 在恢复暂存数据时尽量恢复到原状态
+
+git stash drop stash@{1} # 删除stash@{1}分支对应的缓存数据
+git stash pop # 将最近一次暂存数据恢复并从栈中删除
+```
+
+
 
 # tag
 
@@ -255,7 +272,7 @@ git fetch origin master
 
 ​	`git pull <远程主机名> <远程分支名>:<本地分支名>`
 ​	取回远程库某个分支的更新，再与本地指定的分支合并。
-​	默认情况下, git pull 是 `git fetch,` `git merge FETCH_HEAD` 的缩写。如果使用`--rebase`，运行`git rebase`而不是`git merge`
+​	默认情况下, git pull 是 `git fetch,` `git merge FETCH_HEAD` 的缩写。如果使用`--rebase`，运行`git rebase`而不是`git merge` 
 
 ```shell
 # 要取回origen主机的dev分支，与本地的master分支合并
