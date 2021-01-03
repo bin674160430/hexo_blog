@@ -1337,3 +1337,9 @@ addEvent(div, 'click', function() {
     console.log(1);
 });
 ```
+
+# 性能测试
+
+Benchmark.js
+
+[jsPerf](http://jsperf.com)

@@ -65,10 +65,12 @@ function* fibs() {
         [a, b] = [b, a + b];
   	}
 }
-// 支持默认值，判断是否有值，只要不是undefined就生效
+// 默认值赋值，判断是否有值，只要不是undefined就生效
 let [foo = true] = []; // foo = true
 let [x = 1] = [undefined]; // x = 1
 let [x = 1] = [null]; // x = null
+let [x = 1] = [2]; // x = 2
+let [x = 1] = [0]; // x = 0
 
 // 对象结构赋值，变量名与属性名一致自动匹配值
 let { foo, bar }  = { foo: 'aaa', bar: 'bbb' }; // foo = aaa, bar = bbb
