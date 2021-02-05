@@ -70,16 +70,146 @@ tags:
 
 > 技巧：只要把文件的扩展名改为.xhtml或.xht，多数浏览器（包括Firefox、Chrome、IE9+）都会认为该页面是从web服务器下载下来的，而且MIME类型为XML
 
+# HTML5元素标记
+
+- 不允许写结束标记的元素有：`area` `base` `br` `col` `command` `embed` `hr` `img` `input` `keygen` `link` `meta` `param` `source` `track` `wbr`——（写法是<input/>）
+- 可以省略结束标记的元素有：`li` `dt` `dd` `p` `rt` `rp` `optgroup` `option` `colgroup` `thead` `tbody` `tfoot` `tr` `td` `th`
+- 可以省略全部标记的元素有：`html` `head` `body` `colgroup` `tbody`——（改元素只是标记被省略，实际还是以隐士的方式存在）
+
+# 具有boolean的属性值
+
+​	具有boolean值的属性，例如disabled、readonly等，只写属性而不指定属性值时，表示属性值为true（也可以将属性名、空字符串设定为属性值）；如果想要将属性值设为false，可以不使用改属性。
+
+```html
+<input type="checkbox" checked>
+<input type="checkbox">
+<input type="checkbox" checked="checked">
+<input type="checkbox" checked="">
+```
+
+# 省略引号
+
+````html
+<input type="text">
+<input type='text'>
+<input type=text>
+````
+
 # HTML5新增的元素
 
-| 类别                   | 元素                                                         |
-| ---------------------- | ------------------------------------------------------------ |
-| 用于构建页面的语意元素 | `<article>`<br />`<aside>`<br />`<figcapiton>`<br />`<figure>`<br />`<footer>`<br />`<header>`<br />`<nav>`<br />`<section>`<br />`<details>`<br />`<summary>`（以前支持，现在正式列入规范） |
-| 用于标识文本的语意元素 | `<mark>`<br />`<time>`<br />`<wbr>`列入规范                  |
-| web表单及交互          | `<input>`（增加类型）<br />`<datalist>`<br />`<keygen>`<br />`<meter>`<br />`<progress>`<br />`<command>`<br />`<menu>`<br />`<output>` |
-| 音频、视频及插件       | `<audio>`<br />`<video>`<br />`<source>`<br />`<embed>`列入规范<br /> |
-| Canvas                 | `<canvas>`                                                   |
-| 非英语支持             | `<bdo>`<br />`<rp>`<br />`<rt>`<br />`<ruby>`                |
+## 用于构建页面的语意元素
+
+- `<article>`页面中的一块与上下文不相关的独立内容，例如博客中的一篇文章或报纸中的一篇文章
+
+- `<aside>`表示article元素的内容之外的、与article元素内容相关的辅助信息
+
+- `<figure>`表示一段独立的流内容，一般表示文档主题流内容的一个独立单元，使用figcaption元素为figure元素组添加标题
+
+  ```html
+  <figure>
+  	<figcaption>title</figcaption>
+    <p>
+      content
+    </p>
+  </figure>
+  ```
+
+- `<footer>`整个页面或页面中的一个内容区块的脚注，通常会包含原创作者的姓名、创作日期以及创作者的联系信息
+
+- `<header>`页面中的一个内容区域或者整个页面的标题
+
+- `<nav>`页面中导航链接的部分
+
+- `<section>`页面中的一个内容区块，比如章节、页眉、页脚等；可以与h1等元素结合起来使用标示文档结构
+
+- `<details>`表示用户要求得到并且可以得到的细节信息。它可以与summary元素配合使用，summary元素提供标题或图例，标题是可见的，用户点击标题时，会显示细节信息。summary元素应该是detail元素的第一个子元素。
+
+  ```html
+  <details>
+  	<summary>HTML 5</summary>
+    This document teaches you everything you have to learn about HTML5.
+  </details>
+  ```
+
+  
+
+- `<hgroup>`整个页面或页面中一个内容区块的标题进行组合
+
+- `<summary>`（以前支持，现在正式列入规范）
+
+## 用于标识文本的语意元素
+
+- `<mark>`主要用来在视觉上向用户呈现哪些需要突出显示或高亮显示的文字，mark的一个比较典型的应用就是在搜索结果中向用户高亮显示搜索关键词。
+- `<time>`表示日期或时间
+- `<wbr>`软换行，wbr和br的区别是：br表示此处必须换行，wbr元素的意思是浏览器窗口或父级元素的宽度足够宽时（没必要换行时），不进行换行，而宽度不够时，主动在此处进行换行。*wbr元素对于中文没多大用处。*
+
+## web表单及交互
+
+- `<input>`（增加类型）
+
+- `<datalist>`
+
+- `<keygen>`
+
+- `<meter>`
+
+- `<progress>`表示运行中的进程，可以用progress来显示javascript中耗费时间的函数的进程
+
+- `<command>`表示命令按钮，比如单选按钮、复选框、按钮
+
+  ```html
+  <command onclick="cut()" label="cut">
+  ```
+
+- `<menu>`
+
+- `<output>`
+
+## 音频、视频及插件
+
+- `<audio>`定义音频或其他音频流
+
+  ```html
+  <audio src="someaudio.wav">audio</audio>
+  ```
+
+  
+
+- `<video>`定义视频，比如电影片段或其他视频流
+
+  ```html
+  <video src="movie.ogg" controls="controls">video</video>
+  ```
+
+- `<source>`
+
+- `<embed>`用来插入各种多媒体，格式可以是Midi、Wav、AIFF、AU、MP3(列入规范)
+
+  ```html
+  <embed src="horse.wav"/>
+  ```
+
+  
+
+## Canvas
+
+这个元素本身没有行为，仅提供一块画布，把一个绘图api展现给客户端JavaScript，绘制内容到画布上。
+
+## 非英语支持
+
+- `<bdo>`
+
+- `<rp>`ruby注释中使用，以定义不支持ruby元素的浏览器所显示的内容
+
+- `<rt>`表示字符（中文注音或字符）的解释或发音
+
+- `<ruby>`表示ruby注释（中文注音或字符）
+
+  ```html
+  <ruby>漢<rt><rp>(</rp>厂 乃'<rp>)</rp></rt></ ruby>
+  ```
+
+  
 
 # HTML5删除元素
 
