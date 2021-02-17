@@ -802,6 +802,10 @@ test: <input type="text" name="greeting" list="greetings">
 
 ​	控制input中值的增加、减少时的步幅；例如输入的值0与100之间，但必须是5的倍数，可以指定step为5。
 
+## accept
+
+​	选择文件窗口时，只能选的文件类型；如果选择其他类型文件，file控件也能正常接受。
+
 ## 显示验证
 
 ​	除了以上required、pattern的自动验证外，form、input、select、textarea都具有一个checkValidity，可以显示地对元素进行验证；form和input还存在一个validity属性，返回一个ValidityState对象，该对象具有很多属性，但最简单、最重要的是valid属性，代表表单内所有元素内容是否有效或单个input内容是否有效。
@@ -1073,7 +1077,7 @@ document.createElement('footer');
 
 # 文件API
 
-​	FileList、file
+## FileList、file
 
 ​	HTML5，input[type=file]添加multiple属性，允许一次防止多个文件，用户选择的文件都是一个file对象，而FileList是file对象的列表，代表用户选择的所有文件，file有两个属性：name表示文件名，不包括路径；lastModifiedDate标识文件的最后修改日期。
 
@@ -1095,5 +1099,156 @@ document.createElement('footer');
 选择文件：
 <input type="file" id="file" multiple size="80">
 <input type="button" onclick="ShowFileName()" value="文件上传">
+```
+
+## Blob
+
+​	`Blob`表示二进制原始数据，它提供一个`slice`方法，可以通过该方法访问到字节内部的原始数据块。上面的`file`对象也继承了`Blob`。
+​	`Blob`有两个属性：`size`-字节长度，`type`-`Blob`的`MIME`类型，如果是未知类型，返回一个空字符串。
+
+## FileReader接口
+
+​	FIleReader接口主要用来把文件读入内存，并且读取文件中的数据。提供一个异步api，可以在浏览器主线程中异步访问文件系统，读取文件中的数据。
+​	提供的方法如下，3个用以读取文件，另一个用来读取过程中断。无论读取成功或失败，方法并不会返回读取结果，这一结果存储在result属性中。
+
+- readAsBinaryString(file)：将文件读取为二进制码，二进制字符串。
+- readAsText(file, [encoding])：将文件读取为文本，第二个参数是文本的编码方式，默认为UTF-8。
+- readAsDataURL(file)：将文件读取为DataURL，将小文件以一种特殊格式的URL地址形式直接读入页面，通常是指图像、html等。
+- abort()：中断读取操作。
+
+​	FileReader包含了一套完整的事件模型，用于捕获读取文件时的状态：
+
+- onabort：数据读取中断时触发
+- onerror：数据读取出错时触发
+- onloadstart：数据读取开始时触发
+- onprogress：数据读取中
+- onload：数据读取成功完成时触发
+- onloadend：数据读取完成时触发，无论成功或失败
+
+# 拖放API
+
+​	HTML5提供了支持拖放操作的API，且支持在浏览器与其他应用程序之间的数据相互拖动，同时也大大简化了有关拖放方面的代码。
+
+## 实现拖放
+
+1. 将想要拖放的元素draggable属性设为true；img和a（必须指定href）默认允许拖放。
+2. 编写与拖放有关的事件处理代码。相关事件如下：
+
+| 事件      | 产生事件的元素           | 描述                               |
+| --------- | ------------------------ | ---------------------------------- |
+| dragstart | 被拖放的元素             | 开始拖放操作                       |
+| drag      | 被拖放的元素             | 拖放过程中                         |
+| dragenter | 拖放过程中鼠标经过的元素 | 被拖放的元素开始进入本元素的范围内 |
+| dragover  | 拖放过程中鼠标经过的元素 | 被拖放的元素离开本元素的范围       |
+| dragleave | 拖放过程中鼠标经过的元素 | 被拖放的元素离开本元素的范围       |
+| drop      | 拖放的目标元素           | 有其他元素被拖放到了本元素中       |
+| dragend   | 拖放的对象元素           | 拖放操作结束                       |
+
+```html
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <title>拖放实例</title>
+  <script>
+  function init() {
+    var source = document.getElementById('dragme');
+    var dest = document.getElementById('text');
+    // 拖放开始
+    source.addEventListener('dragstart', function(ev) {
+      // 把要拖动的数据存入DataTransfer
+      var dt = ev.dataTransfer;
+      dt.effectAllowed = 'all';
+      // setData，第一个参数表述数据种类的字符串，只能填入类似'text/plain'/'text/html'表示的MIME文字
+      // 支持拖动处理的MIME类型有以下几种：
+      // 	text/plain: 文本文字；
+      // 	text/html: HTML文字；
+      //  text/xml: XML文字；
+      //  text/uri-list: URL列表，每个URL为一行
+      // 如果设置为dt.setData('text/plain', this.id); 把被拖动元素的id当成了参数，携带的数据就是被拖动元素中的数据
+      // 浏览器中使用getData()方法读取数据时会自动读取该元素中的数据
+      dt.setData('text/plain', '你好');
+    }, false);
+    // 拖放结束
+    dest.addEventListener('dragend', function(ev) {
+      // 不执行默认处理（拒绝被拖放）
+      // 针对拖放的目标元素，必须在dragend、dragover事件内调用preventDefault()
+      // 因为默认情况下，拖放的目标元素是不允许接受元素的，为了把元素拖放到其中，必须把默认处理给关闭掉
+      ev.preventDefault();
+    }, false);
+    // drop 被拖放
+    dest.addEventListener('drop', function(ev) {
+      var dt = ev.dataTransfer;
+      var text = dt.getData('text/plain');
+      dest.textContent += text;
+      // 不执行默认处理（拒绝被拖放）
+      ev.preventDefault();
+      // 停止事件传播
+      ev.stopPropagation();
+    }, false);
+    // 设置页面属性，不执行默认处理（拒绝被拖放）
+    // 实现拖放过程，必须设定整个页面为不执行默认处理（拒绝被拖放），否则拖放处理将不能被实现；因为页面是先于其他元素接受释放的，如果页面上拒绝释放，那么页面上其他元素就都不能接受释放了。
+    // 要使元素可以被拖放，首先必须把该元素的draggable属性设为true；接着，为了让这个实例在所有支持拖放API的浏览器中都能正常运行，需要指定 '-webkit-user-drag: element'
+    document.ondragover = function(e) { e.preventDefault(); };
+    document.ondrop = function(e) { e.preventDefault(); };
+  }
+  </script>
+</head>
+<body onload="init()">
+  <h1>简单拖放实例</h1>
+  <div id="dragme" draggable="true" style="width: 200px; border: 1px solid gray;">
+    	请拖放
+  </div>
+  <div id="text" style="width: 200px; height: 200px; border: 1px solid gray;"></div>
+</body>
+```
+
+## DataTransfer对象
+
+- dropEffect：表示拖放操作的视觉效果，允许对其进行值的设定；该效果必须在用effectAllowed属性指定允许的视觉效果范围内，允许指定的值为none、copy、link、move
+- effectAllowed：用来指定当元素被拖放时所允许的视觉效果，可以指定的值为none、copy、copyLink、copyMove、link、linkMove、move、all、unintialize
+- types：存入数据的种类，字符串的伪数组
+- void clearData(DOMString format)：清除DataTransfer对象中存放的数据，如果省略format，则清除全部数据
+- void setData(DOMString format, DOMStrung data)：向DataTransfer对象内存入数据
+- DOMString getData(DOMString format)：从DataTransfer对象中读数据
+- void setDragImage(Element image, long x, long y)：用img元素来设置拖放图标（部分浏览器中可以用canvas等其他元素来设置）
+
+## 设定拖放时的视觉效果
+
+​	dropEffect、effectAllowed结合可以设定拖放的视觉效果；
+​	effectAllowed属性表示当一个元素被拖动时所允许的视觉效果，多数在ondragstart事件中设定，值为none、copy、copyLink、copyMove、link、linkMove、move、all、unintialize。
+​	dropEffect属性表示实际拖放时的视觉效果，多数在ondragover中指定，允许设定的值为none、copt、link、move。
+​	dropEffect所表示的视觉效果必须在effectAllowed所表示的允许的视觉效果范围内。规则如下所示：
+
+- 如果effectAllowed为none，则不允许拖放元素。
+- 如果dropEffect为none，则不允许被拖放到目标元素中。
+- 如果effectAllowed为all或不设定，则dropEffect属性允许被设定为任何值，并且按指定的视觉效果进行。
+- 如果effectAllowed设定为具体效果（不为none、all），dropEffect也设定了具体视觉效果，则两个具体效果值必须完全相等，否则不允许将拖放元素拖放到目标元素中。
+
+```javascript
+source.addEventListener('dragstart', function(ev) {
+  var dt = ev.dataTransfer;
+  dt.effectAllowed = 'copy';
+  dt.setData('text/plain', '你好');
+}, false);
+dest.addEventListener('dragover', function(ev) {
+  var dt = ev.dataTransfer;
+  dt.dropEffect = 'copy';
+  ev.preventDefault();
+}, false);
+```
+
+## 自定义拖放图标
+
+​	setDragImage(Element image, long x, long y)：鼠标拖动元素过程中，位于鼠标指针下部的小图标。
+第一个参数image设定为拖放图标的图标元素；第二个参数x为拖放图标离鼠标指针x轴距离；第三个参数y为拖放图标离鼠标指针y轴距离。
+
+```javascript
+var dragIcon = document.createElement('img');
+dragIcon.src = 'http://twivatar.org/twitter/mini';
+source.addEventListener('dragstart', function(ev) {
+  var dt = ev.dataTransfer;
+  dt.setDragImage(dragIcon, -10, -10);
+  dt.setData('text/plain', 'aaa');
+}, false);
 ```
 
