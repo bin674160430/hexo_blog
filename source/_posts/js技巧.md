@@ -284,3 +284,22 @@ if (a.indexOf('e') === -1) {
 // a 是真值，结果就是a，不用判断b
 ```
 
+# 字符串运算（支持Unicode）
+
+```javascript
+// es6 字符串内置的跌大气，可以识别 Unicode
+var gclef = " ";
+[...gclef].length;
+Array.from(gclef).length;
+
+// 组合音标符号不适用
+var s1 = "\xE9", 
+ s2 = "e\u0301";
+console.log( s1 ); // "é"   字符长度1
+console.log( s2 ); // "é"   字符疮长度2
+
+// 可以使用ES6的String.normalize()
+s2.normalize().length; // 1
+// 如果符号多，存在问题的
+```
+
