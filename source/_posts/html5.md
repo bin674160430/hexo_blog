@@ -580,7 +580,9 @@ function updateProgress(newValue) {
 ​	`<audio>`定义音频或其他音频流
 
 ```html
-<audio src="someaudio.wav">audio</audio>
+<audio src="someaudio.wav">
+	您的浏览器不支持audio<!-- 不支持的audio元素的浏览器会显示的替代文字 -->
+</audio>
 ```
 
 ## video
@@ -588,12 +590,229 @@ function updateProgress(newValue) {
 ​	`<video>`定义视频，比如电影片段或其他视频流
 
 ```html
-<video src="movie.ogg" controls="controls">video</video>
+<video height="360" width="640" src="movie.ogg" controls="controls">
+	您的浏览器不支持video
+</video>
 ```
 
 ## source
 
-​	`<source>`媒介元素，定义媒介资源
+​	`<source>`媒介元素，定义媒介资源，为同一个媒体数据指定多个播放格式与编码方式，以确保浏览器可以从中选择一种支持的格式进行播放，从上往下选择到支持的格式为止。
+
+```html
+<video>
+    <!-- 在Ogg theora格式、Quicktime格式与mp4格式之间，挑选支持的播放格式 -->
+    <source src='sample.ogv' type='video/ogg; codecs="theora, vorbis"'>
+    <source src='sample.mov' type='video/quicktime'>
+    <!-- type标识媒体类型，不要省略type属性，否则浏览器会从上往下选择时，无法判断自己能不能播放而先下载一小段视频（或音频），这样就有可能浪费带宽和时间 -->
+</video>
+```
+
+浏览器支持的格式：
+
+- IE9：支持H.264、vp8视频编码格式，MP3、WAV音频编码格式
+- Firefox4：支持Ogg Theora、vp8视频编码格式，Ogg vorbis、WAV音频编码格式
+- Opera10以上：支持Ogg Theora、vp8视频编码格式，Ogg vorbis、WAV音频编码格式
+- Chrome6以上：支持H.264、Ogg Theora、vp8视频编码格式，Ogg vorbis、MP3音频编码格式
+
+## auido和video属性
+
+- `src`：指定媒体数据钟的URL地址
+
+- `autoplay`：指定媒体是否在页面加载后自动播放
+
+- `preload`：指定视频、音频数据是否预加载，如果使用预加载，浏览器会预先将视频、音频数据进行缓冲，加快播放速度。属性值为 `none`-不进行预加载，`metadata`-只预加载媒体的元数据（媒体字节数、第一帧、播放列表、持续时间等），`auto`（默认值）-预加载全部视频或音频。
+
+- `poster`（video元素独有属性），当视频不可用，可以使用该元素向用户展示一张替代用的图片。
+
+  ```html
+  <video src="sample.mov" poster="cannotuse.jpg"></video>
+  ```
+
+- `loop`：指定是否循环播放视频或音频
+
+- `controls`：为视频或音频添加浏览器自带播放用的控制条，控制条具有播放、暂停等按钮，也可以自定义控制条。
+
+  ```html
+  <video src="sample.mov" controls></video>
+  ```
+
+- `width`、`height`（`video`独有属性）：指定视频的宽度与高度，单位为像素。
+
+- `error`：在读取、使用媒体数据过程中，只要出现错误，error属性将返回一个MediaError对象，该对象的code返回对应的错误状态，如下所示：
+
+  - `MEDIA_ERR_ABORTED`：1，媒体数据下载过程由于用户的操作原因而被中止
+  - `MEDIA_ERR_NETWORK`：2，确认媒体资源可用，但是在下载时出现网络错误，媒体数据的下载过程被中止
+  - `MEDIA_ERR_DECODE`：3，确认媒体资源可用，但是解码时发生错误
+  - `MEDIA_ERR_SRC_NOT_SUPPORTED`：4，媒体格式不支持
+
+  ```html
+  <video id="videoElement" src="sample.mov"></video>
+  <script>
+  	var video = document.getElementById('vedio');
+      video.addEventListener('error', function() {
+          var error = video.error;
+          switch(error.code) {
+              case 1:
+                  alert('视频下载过程被中止');
+                  break;
+              case 2:
+                  alert('网络发生故障，视频下载过程被中止');
+                  break;
+              case 3:
+                  alert('解码失败');
+                  break;
+              case 4:
+                  alert('不支持播放视频格式');
+                  break;
+          }
+      }, false);
+  </script>
+  ```
+
+- `networkState`：（只读）读取当前网络状态，如下所示：
+
+  - `NETWORK_EMPTY`：0，元素处于初始状态
+  - `NETWORK_IDLE`：1，浏览器已选择好用什么编码格式来播放媒体，但尚未建立网络连接
+  - `NETWORK_LOADING`：2，媒体数据加载中
+  - `NETWORK_NO_SOURCE`：3，没有支持的编码格式，不执行加载
+
+  ```javascript
+  var video = document.getElementById('video');
+  video.addEventListener('progress', function(e) {
+      var networkStateDisplay = document.getElementById('networkState');
+      if (video.networkState == 2) {
+          networkStateDisplay.innerHTML = '加载中...[' + e.loaded + ' / ' + e.total + ' byte]';
+      } else if (video.networkState == 3) {
+          networkStateDisplay.innerHTML = '加载失败';
+      }
+  }, false);
+  ```
+
+- `currentSrc`：（只读）读取播放中的媒体数据URL地址
+
+- `buffered`：（只读）该属性返回一个实现TimeRanges接口的对象，以确认浏览器是否已缓存媒体数据，`TimeRanges`表示一段时间范围，时间范围是一个单一的以0开始的范围，但是如果浏览器发出`Range Requests`请求，这时`TimeRanges`表示的时间范围是多个时间范围。具有一个length，表示多少个时间范围，存在时间范围值为1，不存在为0；具有两个方法——`TimeRanges.start(index)`、`TimeRanges.end(index)`，多数情况下index为0，当用`videoElement.buffered`来实现`TimeRanges`接口，`TimeRanges.start(0)`表示当前缓存区从媒体数据的什么时间开始进行缓存，`TimeRanges.end(0)`表示当前缓存区域内的结束时间。
+
+- `readyState`：（只读）返回媒体当前播放位置的就绪状态，值如下
+
+  - `HAVE_NOTHING`：0，没有获取到媒体的任何信息，当前播放位置没有可播放数据
+  - `HAVE_METADATA`：1，获取的媒体数据无效，不能播放
+  - `HAVE_CURRENT_DATA`：2，当前帧的数据已获得，但还没有获取到下一帧的数据，或者当前帧已经是最后一帧
+  - `HAVE_FUTURE_DATA`：3，当前帧的数据已获得，而且也获取到了下一帧的数据，当前帧是最后一帧时，不可能是`HAVE_FUTURE_DATA`
+  - `HAVA_ENOUGH_DATA`：4，当前播放位置已经有数据可以播放，同时也获取到了可以让播放器前进的数据，而且浏览器确认媒体数据以某一种速度进行加载，可以保证有足够的后续数据进行播放
+
+- `seeking: boolean`，（只读）表示浏览器是否正在请求某一特定播放位置的数据，true表示浏览器正在请求数据，false表示浏览器已停止请求。
+
+- `seekable: TimeRanges`，（只读）请求到的数据的时间范围，开始时间为请求视频数据第一帧的时间，结束时间为请求到视频数据最后一帧的时间。
+
+- `currentTime`：读取媒体的当前播放位置，可以修改currentTime来修改当前播放位置；如果修改的位置上没有可用的媒体数据，抛出`INVALID_STATE_ERR`；如果修改的位置超出了浏览器在一次请求中可以请求的数据范围，将抛出`INDEX_SIZE_ERR`。（单位：秒）
+
+- `startTime`：（只读）读取媒体播放的开始时间，通常为0。（单位：秒）
+
+- `duration`：（只读）读取媒体文件总的播放时间。（单位：秒）
+
+- `played: TimeRanges`，（只读）读取媒体文件的已播放部分的时间段；开始时间为已播放部分的开始时间，结束时间为已播放部分的结束时间。
+
+- `paused: boolean`，（只读）true暂停播放，false正在播放。
+
+- `end: boolean`，（只读）true播放完毕，false没有播放完毕。
+
+- `defaultPlaybackRate`：读取或修改媒体默认的播放速率。
+
+- `playbackRate`：读取或修改媒体当前的播放速率。
+
+- `volume: number`，读取或修改媒体的播放音量，范围0~1。
+
+- `muted: boolean`，读取或修改媒体的静音状态，true静音，false非静音。
+
+## audio和video方法
+
+- `play()`，播放媒体，自动将元素的`paused`设置为`false`。
+
+- `pause()`，暂停播放，自动将元素的`paused`设置为`true`。
+
+- `load()`，重新载入媒体进行播放，自动将`playbackRate`设置为`defaultPlaybackRate`的值，自动将元素`error`设置为`null`。
+
+- `canPlayType(type): string`，测试浏览器是否支持指定的媒体类型。
+
+  ```javascript
+  var support = videoElement.canPlayType(type);
+  // 返回的值如下
+  // 空字符串：表示浏览器不支持该媒体类型
+  // maybe：表示浏览器可能支持该媒体类型
+  // probably：表示浏览器确定支持该媒体类型
+  ```
+
+## audio和video事件
+
+​	`videoElement.addEventListener(type, listener, useGapture)`：`type`为事件名称，`listener`表示绑定的函数，`useGapture`是一个布尔值，表示该事件的响应顺序，`true`浏览器采用`Capture`相应方式；`false`浏览器采用`bubbing`相应方式。
+
+- `loadstart`：浏览器开始在网上寻找媒体数据。
+- `progress`：浏览器正在获取媒体数据。
+- `suspend`：浏览器暂停获取媒体数据，但是下载过程并没有正常结束。
+- `abort`：浏览器在下载完全部媒体数据之前中止获取媒体数据，但是并不是由错误引起的。
+- `error`：获取媒体数据过程中出错。
+- `emptied`：video、audio所在网络突然变为初始化状态，可能引起的原因下面两点
+  1. 载入媒体过程中濡染发生一个致命错误
+  2. 在浏览器正在选择支持的播放格式时，又调用了load方法重新载入媒体
+- `stalled`：浏览器尝试获取媒体数据失败。
+- `play`：即将开始播放，当执行了play方法时出发，或数据下载后元素被设为autoplay（自动播放）属性。
+- `pause`：播放暂停，当执行了pause方法时出发。
+- `loadedmetadata`：浏览器获取完毕媒体的时间长和字节数。
+- `loadeddata`：浏览器已加载完毕当前播放位置的媒体数据，准备播放。
+- `waiting`：播放过程由于得不到下一帧而暂停播放（例如下一帧尚未加载完毕），但很快就能够得到下一帧。
+- `playing`：正在播放。
+- `canplay`：浏览器能够播放媒体，但估计以当前播放速率不能直接将媒体播放完毕，播放期间需要缓冲。
+- `canplaythrough`：浏览器能够播放媒体，而且以当前播放速率能够将媒体播放完毕，不再需要进行缓冲。
+- `seeking`：seeking属性变为true，浏览器正在请求数据。
+- `seeked`：seeking属性变为false，浏览器停止请求数据。
+- `timeupdate`：当前播放位置被改变，可能是播放过程中的自然改变，也可能是被认为地改变，或由于播放不能连续而发生的跳变。
+- `ended`：播放结束后停止播放。
+- `ratechange`：defaultplaybackRate属性（默认播放速率）或playbackRate属性（当前播放速率）被改变。
+- `durationchange`：播放时长被改变。
+- `volumechange`：volume、muted属性被改变。
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>视频播放器</title>
+        <script>
+        	function playOrPauseVideo() {
+                var videoUrl = document.getElementById('videoUrl').value;
+                var video = document.getElementById('video');
+                video.addEventListener('timeupdate', function() {
+                    var timeDisplay = document.getElementById('time');
+                    timeDisplay.innerHTML = Math.floor(video.currentTime) + '/' + Math.floor(video.duration) + '（秒）';
+                }, false);
+                
+                if (video.paused) {
+                    if (videoUrl != video.src) {
+                        video.src = videoUrl;
+                        video.load();
+                    } else {
+                        video.play();
+                    }
+                    document.getElementById('playButton').value = '暂停';
+                } else {
+                    video.pause();
+                    document.getElementById('playButton').value = '播放';
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <video id="video" width="400" height="300" autoplay loop="loop"></video>
+        <br />
+        视频地址：<input type="text" id="videoUrl" />
+        <input id="playButton" type="button" onclick="playOrPauseVideo()" value="播放" />
+        <span id="time"></span>
+    </body>
+</html>
+```
+
+
 
 ## embed
 
@@ -1251,4 +1470,504 @@ source.addEventListener('dragstart', function(ev) {
   dt.setData('text/plain', 'aaa');
 }, false);
 ```
+
+# 本地存储
+
+​	Web Storage与本地数据库，Web Storage存储机制是对HTML 4中cookies存储机制的一个改善，由于cookies存储机制有很多缺点，HTML 5中不再使用它，转而使用改良后的Web Storage存储机制。
+
+## cooloes储存永久数据存在的问题
+
+- 大小：cookies的大小被限制在4KB。
+- 带宽：cookies是随HTTP事务一起被发送的，因此会浪费一部分发送cookies时使用的带宽。
+- 复杂性：要正确地操作cookies是很困难的。
+
+## sessionStorage
+
+​	临时保存从用户进入网站到关闭浏览器窗口这段时间内保存的任何数据。
+
+```javascript
+sessionStorage.setItem(key: string, value: string): void;
+sessionStorage.getItem(key: string): string;
+```
+
+## localStorage
+
+​	将数据永久地保存在客户端本地的硬件设备中，即使浏览器关闭了，数据仍然存在。
+
+```javascript
+localStorage.setItem(key: string, value: string): void;
+localStorage.getItem(key: string): string;
+```
+
+# 本地数据库
+
+​	在HTML4中，数据库只能放在服务端，但在HTML 5中，可以像访问本地文件那样轻松地对内置数据库进行直接访问。这种本地数据库被称为“SQLLite”的文件型SQL数据库；实际应用中有两个必要的步骤：1. 创建访问数据库的对象；2. 使用事务处理。
+
+```javascript
+/*
+	@param1 数据库名
+	@param2 版本号
+	@param3 数据库描述
+	@param4 数据库大小
+*/
+var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+// transaction执行事务处理
+db.transaction(function (tx) {
+    tx.executeSql('CREATE TABLE IF NOT EXISTS LOGS (id unique, Log)');
+});
+```
+
+## 创建数据表
+
+`CREATE TABLE IF NOT EXISTS MsgData(name TEXT, message TEXT, time INTEGER)`
+
+## executeSql 查询
+
+```javascript
+/*
+	@param1 需要执行的SQL语句
+	@param2 SQL语句中使用到的参数数组，第一个参数SQL语句中参数占位符"?"，依次对应第二个参数的入参
+	@param3 执行SQL成功回调
+	@param4 执行SQL出错回调
+*/
+transaction.executeSql(sqlquery, [], dataHandler, errorHandler);
+// demo
+transaction.executeSql(
+    'UPDATE people set age=? where name=?;',
+    [age, name],
+    function(transaction, results) {
+        
+    },
+    function(transaction, errmsg) {
+        
+    }
+);
+```
+
+# 离线Web应用程序
+
+​	HTML 5新增了让Web应用在离线状态的时候也能正常工作，把web应用的HTML、CSS、JavaScript等放到本地缓存，当服务器没有和Internet建立连接的时候，可以利用本地缓存中的资源文件来正常运行web应用程序。
+
+## 本地缓存与浏览器缓存的区别
+
+​	**本地缓存**是整个Web应用程序的，只缓存那些指定缓存的网页，本地缓存是可靠的，可以控制对哪些内容进行缓存，开发人员还可以用编程来控制缓存的更新，利用缓存对象的各种属性、状态和时间来开发出更为强大的离线应用程序。
+​	**浏览器缓存**只是单个网页，任何网页都具有网页缓存；网页缓存是不安全、不可靠的，因为我们不知道在网站中到底缓存了哪些网页，缓存了网页的哪些资源；
+
+## manifest文件
+
+​	Web应用程序的本地缓存是通过每个页面的`manifest`文件来管理的，配置内容如下：
+
+```sh
+CACHE MANIFEST
+# 文件的开头必须要书写 CACHE MANIFEST，把本间的作用告知浏览器
+version 7
+# 最好添加一个版本号，更新manifest文件的时候也会更新版本号
+CACHE
+# CACHE 指定需要被缓存在本地的资源文件，为某个页面指定需要本地缓存的资源文件，不需要把这个文件本身指定在CACHE类别中，如果一个页面具有manifest文件，浏览器会自动对这个页面进行本地缓存
+other.html
+hello.js
+images/myphoto.jpg
+NETWORK
+# NETWORK 显示指定不进行本地缓存的资源文件，这些资源文件只有当客户端与服务端建立连接的时候才能访问，下面示例中的*为通配符，标识没有在manifest中指定的资源文件都不进行本地缓存
+http://xxx/xxx
+Notoffline.asp
+*
+FALLBACK
+# FALLBACK 每行指定两个资源文件，第一个资源文件是能够在线访问时使用的资源文件，第二个资源文件是不能在线访问时使用的备用资源文件
+online.js locale.js
+CACHE
+# 允许重复书写同一类别，追加CACHE类别中的内容
+newhello.html
+newhello.js
+
+# 每个类别都是可选的，但是如果文件开头没有指定类别而直接书写资源文件的时候，浏览器把这些资源文件视为CACHE类别，直到看见文件中第一个被书写出来的类别为止
+```
+
+​	同时，真正运行或测试离线`Web`应用程序的时候，需要对服务器进行设置，让服务器支持`text/cache-manifest`这个`MIME`类型（HTML 5中规定manifest文件的MIME类型是 `text/cache-manifest`）；例如对Apache服务器进行配置的时候，需要找到`{apache_home}/conf/mime.types`文件，并在文件最后添加 `text/cache-manifest manifest`。
+​	在微软的IIS服务器中的步骤如下：
+1）右键选择默认网站或需要添加类型的网站，弹出属性对话框
+2）选择“HTTP头”标签
+3）在MIME映射下，单机文件类型按钮
+4）在打开的MIME类型对话框中单机新建按钮
+5）在关联扩展名文本框中输入“manifest”，在内容类型文本框中输入“text/cache-manifest”，然后单击确定按钮
+
+需要在Web应用程序页面上的html标签的manifest属性指定manifest文件的URL地址，让浏览器能够正常阅读该文本文件
+
+```html
+<!-- 可以为每个页面单独指定一个manifest文件 -->
+<html manifest="hello.manifest">
+    
+</html>
+
+<!-- 也可以为整个Web应用程序指定一个总的manifest文件 -->
+<html manifest="global.manifest">
+    
+</html>
+```
+
+通过以上步骤，将资源文件保存到本地缓存区。只要修改manifest文件，浏览器可以自动检查manifest文件，并自动更新本地缓存区中的内容。
+
+# 浏览器与服务器的交互过程
+
+1. 浏览器请求访问网址：http://xxx.com。
+2. 服务器返回index.html。
+3. 浏览器解析index.html，请求网页上所有资源文件，包括HTML、图像、css、JavaScript、manifest文件。
+4. 服务器返回所有资源文件。
+5. 浏览器处理manifest文件，请求manifest中所有要求本地缓存的文件，包括index.html页面本身，即使刚才已经请求过这些文件；如果要求本地缓存所有文件，这将是一个比较大的重复请求过程。
+6. 服务器返回要求本地缓存的文件。
+7. 浏览器对本地缓存进行更新，存入包括页面本身在内容的所有要求本地缓存的资源文件，并且触发一个事件，通知本地缓存被更新。
+
+现在浏览器已经把本地缓存更新完毕，再次打开http://xxx.com，在manifest文件没有被修改过的情况下，交互过程如下：
+
+1. 浏览器再次请求访问网址：http://xxx.com。
+2. 浏览器发现这个页面被本地缓存，于是使用本地缓存中index.html。
+3. 浏览器解析index.html。使用所有本地缓存中的资源文件。
+4. 浏览器向服务器请求manifest文件。
+5. 服务器返回一个304，通知浏览器manifest没有发生变化。
+
+如果manifest文件被更新过了，那么交互过程如下：
+
+1. 浏览器再次请求访问网址：http://xxx.com。
+2. 浏览器发现这个页面被本地缓存，于是使用本地缓存中index.html。
+3. 浏览器解析index.html，使用所有本地缓存中的资源文件。
+4. 浏览器向服务器请求manifest文件。
+5. 服务器返回更新过的manifest文件。
+6. 浏览器处理manifest文件，发现有更新，于是请求所有要求进行本地缓存的资源文件，包括index.html。
+7. 浏览器返回要求进行本地缓存的资源文件。
+8. 浏览器对本地缓存进行更新，存入所有新的资源文件，并且触发一个事件，通知本地缓存被更新。
+
+注意：即使资源文件被修改过了，在页面上已装入的资源文件是不会发生变化的，如图片不会突然变成新的图片，脚本文件也不会突然视同新的脚本文件，更新后的本地缓存中的内容还不能被使用，只有重新打开页面的时候才会使用更新后的资源文件。如果不想修改manifest文件中对于资源文件的设置，但是对服务器上请求缓存的资源文件进行了修改，那么可以通过修改版本号的方式让浏览器认为manifest文件已经被更新过了，重新下载修改过的资源文件。
+
+# applicationCache
+
+​	本地缓存，当浏览器对本地缓存进行更新，装入新的资源文件时，会触发applicationCache对象的updateready事件，通知本地缓存已被更新；可以利用这个事件告诉用户本地缓存已经被更新，用户需要手工刷新页面来得到最新版本的应用程序。
+
+```javascript
+// updateReady只有服务器上的manifest文件被更新，并且把manifest文件中要求的资源文件下载到本地后触发
+// 相当于本地缓存准备被更新
+applicationCache.onUpdateReady = function() {
+    alert('本地缓存已更新，您可以刷新页面来得到最新版本');
+}
+```
+
+浏览器与服务器交互触发的`applicationCache`事件
+
+1. 浏览器请求访问网址：http://xxx.com。
+2. 服务器返回`index.html`。
+3. 浏览器发现网页具有`manifest`，触发`checking`事件，检查`manifest`文件是否存在；不存在触发`error`事件，表示manifest未找到，将不执行第6步开始的交互过程。
+4. 浏览器解析`index.html`，请求页面上的所有资源文件。
+5. 服务器返回所有资源文件。
+6. 浏览器处理`manifest`文件，请求manifest中所有要求本地缓存的文件，包括`index.html`，即使是刚请求过的文件；如果要求本地缓存所有文件，这将是一个比较大的重复请求过程。
+7. 服务器返回所有要求本地缓存的文件。
+8. 浏览器触发`downloading`事件，开始下载资源，在下载的同事，周期性地触发`progress`事件，可以用编程获取多少文件已被下载，多少文件仍然处于下载队列等消息。
+9. 下载结束后触发`cached`事件，表示首次缓存成功，存入所有要求本地缓存的资源文件。
+
+再次访问http://xxx.com，步骤1-5同上，在步骤5执行完之后，浏览器将核对manifest文件是否被更新，若没有被更新，触发`noupdate`事件，步骤6开始的交互过程不被执行。如果被更新了，将继续执行后面的操作，在步骤9中不触发`cached`事件，而是触发`updatgeready`，表示下载结束，可以通过刷新页面来使用更新后的本地缓存，或调用`swapCache`理科使用更新后的本地缓存。
+
+在访问缓存名单时如果返回一个HTTP404（页面未找到），或者410（永久消失），将触发`obsolete`事件。
+整个过程中，如果任何与本地缓存有关的处理中发生错误的话，都会触发error事件，具体如下：
+
+- 缓存名单返回一个HTTP 404（页面未找到），或410（永久消失）
+- 缓存名单被找到且没有更改，但引用缓存名单的HTML页面不能正确下载
+- 缓存名单被找到且被更改，但浏览器不能下载某个缓存名单中列出的资源
+- 开始更新本地缓存时，缓存名单再次被更改
+
+```html
+<!DOCTYPE html>
+<html manifest="applicationCacheEvent.manifest">
+    <head>
+        <meta charset="UTF-8">
+        <title>applicationCache事件流程</title>
+        <script>
+    	function init() {
+            applicationCache.addEventListener('checking', function() {
+                console.log('checking');
+            }, true);
+            applicationCache.addEventListener('noupdate', function() {
+                console.log('noupdate');
+            }, true);
+            applicationCache.addEventListener('downloading', function() {
+                console.log('downloading');
+            }, true);
+            applicationCache.addEventListener('progress', function() {
+                console.log('progress');
+            }, true);
+            applicationCache.addEventListener('updateready', function() {
+                console.log('updateready');
+            }, true);
+            applicationCache.addEventListener('cached', function() {
+                console.log('cached');
+            }, true);
+            applicationCache.addEventListener('error', function() {
+                console.log('error');
+            }, true);
+        }
+    </script>
+    </head>
+	<body onload="init()">
+        
+    </body>    
+</html>
+```
+
+
+
+# swapCache
+
+​	手动执行本地缓存的更新，只能在applicationCache对象的updateReady事件被触发时调用；如果本地缓存的容量非常大（超过100MB），本地缓存的更新工作将需要相对长的时间，而且还会把浏览器锁住；需要给一个提示说明
+
+```javascript
+applicationCache.onUpdateReady = function() {
+    alert('正在更新本地缓存...');
+    applicationCache.swapCache();
+    alert('本地缓存已被更新，您可以刷新页面来得到最新版本');
+}
+```
+
+```html
+<!DOCTYPE html>
+<html manifest="swapCache.manifest">
+	<head>
+    	<meta charset="UTF-8">
+        <title>swapCache</title>
+        <script>
+        	function init() {
+                setInterval(function() {
+                    // 手工检查是否有更新
+                    applicationCache.update();
+                }, 5000);
+                applicationCache.addEventListener('updateready', function() {
+                    if (confirm('本地缓存已被更新，需要刷新页面来获取最新版本，是否刷新？')) {
+                        applicationCache.swapCache();
+                        // 重载
+                        location.reload();
+                    }
+                }, true)
+            }
+        </script>
+    </head>
+</html>
+```
+
+# 跨文档消息传输
+
+​	只要获取网页所在窗口对象的实例，同源（域+端口）web网页之间可以互相通信，以及跨域通信。
+
+```javascript
+// 对窗口对象message事件监听
+window.addEventListener("message", function() {}, false);
+// 向其他窗口发送消息
+window.postMessage("message", targetOrigin);
+```
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>跨域通信</title>
+        <script>
+        window.addEventListener("message", function(ev) {
+            // 忽略url地址之外的页面传过来的信息
+            if (ev.origin !== 'http://www.blue-butterfly.net') {
+                return;
+            }
+            alert('从' + ev.origin + '传过来的消息:\n' + ev.data);
+        }, false);
+        function hello() {
+            var iframe = window.frames[0];
+            iframe.postMessage('您好', 'http://www.blue-butterfly.net/test/');
+        }
+        </script>
+    </head>
+    <body>
+        <h1>
+            跨域通信
+        </h1>
+        <iframe width="400" src="http://www.blue-butterfly.net/test/" onload="hello()"></iframe>
+    </body>
+</html>
+
+<!-- iframe http://www.blue-butterfly.net/test/ 页面代码如下 -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script>
+        window.addEventListener("message", function(ev) {
+            if (ev.origin !== 'http://xxx') {
+                return;
+            }
+            document.body.innerHTML = '从' + ev.origin + '传递过来的消息<br>' + ev.data;
+            // 向主页面发送消息
+            ev.source.postMessage('你好，这里是' + this.location, ev.origin);
+        }, false);
+        </script>
+    </head>
+</html>
+```
+
+# Web Sockets
+
+​	服务器与客户端之间建立一个非HTTP的双向连接，这个连接是实时的，也是永久的，除非被显示关闭。
+
+```javascript
+// 建立通信连接，必须以ws、wss（加密通信）开头
+var webSocket = new WebSocket('ws://localhost:8080/socket');
+// send发送数据，只能发送文本数据
+webSocket.send('data');
+// 接收服务器传递数据事件
+webSocket.onmessage = function(event) {
+    console.log(event.data);
+};
+// 监听socket打开事件
+webSocket.onopen = function(event) {
+    // 开始通信时处理
+};
+// 监听socket关闭事件
+webSocket.onclose = function(event) {
+    // 通信结束时处理
+};
+// 通过close关闭socket，切断通信连接
+webSocket.close();
+```
+
+可以通过`readyState`获取`WebSocket`状态，`readyState`值如下所示：
+
+- `CONNECTING`：0，正在连接
+- `OPEN`：1，已建立连接
+- `CLOSING`：2，正在关闭连接
+- `CLOSED`：3，已关闭连接
+
+# Web Wrokers处理线程
+
+​	Web Workers实现Web的多线程处理功能，将创建一个不影响前台处理的后台进程，并且在这个后台线程中创建多个子线程，将耗时较长的处理交给后台线程去运行，解决HTML 5因为某个处理耗时过长而卡住的状态。
+
+```javascript
+// 将执行的脚本文件当做URL地址作为参数，创建Worker对象
+var worker = new Worker('worker.js');
+// 后台线程是不能访问页面或者窗口对象的，可以通过发送和接收消息互相传递数据
+worker.onmessage = function(event) {
+    // 处理收到的消息
+};
+// 发送消息
+worker.possMessage('message');
+```
+
+```html
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <script>
+    	var worker = new Worker('SumCalculate.js');
+    	worker.onmessage = function(event) {
+            console.log(event.data);
+        };
+        function calculate() {
+            worker.postMessage(+document.getElementById('num').value);
+        };
+    </script>
+</head>
+<body>
+    <h1>
+        从1到定数值的求和示例
+    </h1>
+    输入数值：<input type="text" id="num">
+    <button onclick="calculate()">计算</button>
+</body>
+
+<!--SumCalculate.js-->
+onmessage = function(event) {
+	var num = event.data;
+	var result = 0;
+	for (var i = 0; i <= num; i++) {
+        result += i;      
+    }
+    postMessage(result);
+    close(); // 关闭子线程
+}
+```
+
+## 线程嵌套，多个子线程数据交互
+
+1. 创建发送数据的子线程
+2. 执行子线程中的任务，把要传递的数据发送给主线程
+3. 在主线程接受子线程传回来的消息，创建接受数据的子线程，然后把发送数据的子线程中返回的消息传递给接受数据的子线程
+4. 执行接收数据子线程中的代码
+
+```javascript
+onmessage = function(event) {
+    var worker = new Worker('worker1.js');
+    worker.postMessage('');
+    worker.onmessage = function(ev) {
+        console.log(ev.data);
+    }
+    close();
+}
+```
+
+## 线程中可用的变量、函数与类
+
+- `self`：`self`关键词便是本线程范围内的作用域。
+- `postMessage(message)`：向创建线程的源窗口发送消息。
+- `onmessage`：获取接受消息的事件句柄。
+- `importScripts(urls)`：导入其它JavaScript，可以导入多个`importScripts('script1.js', 'scripts2.js')`。
+- `navigator`：与window.navigator对象类似，具有appName、platform、userAgent、appVersion这些属性。
+- `sessionStorage`、`localStorage`
+- `XMLHttpRequest`
+- `Web Workers`：线程中嵌套线程。
+- `setTimeout()`、`setInterval()`：定时器。
+- `close()`：结束本线程。
+- `eval()`、`isNaN()`、`escape()`等。
+- 所有`JavaScript`核心函数。
+- `object`：创建和使用本地对象。
+- `WebSockets`：向服务器发送和接收消息。
+
+# 地理位置信息
+
+`window.navigator.geolocation`：Geolocation API
+
+```javascript
+// getCurrentPosition(onSuccess, onError, options): void 获取用户当前地理位置信息
+navigator.geolocation.getCurrentPosition(
+    function(position) {
+        // 获取当前地理位置成功回调
+    	console.log(position);
+	},
+    function(error) {
+        // 获取当前地理位置失败回调
+        console.error(error);
+        // error.code有三个值：1-用户拒绝了位置服务；2-获取不到位置信息；3-获取信息超时错误
+        // error.message错误信息
+    },
+    {
+        // enableHighAccuracy： 是否要求高精度的地理位置信息，在很多设备上设置了都没用，因为是被需要结合电量，具体地理情况来综合考虑，默认即可。
+        // timeout：超时，（毫秒单位），该时间内未获取到地理信息，返回错误
+        timeout: 5 * 1000,
+        // maximumAge：缓存有效时间（毫秒单位），假设缓存2分钟，10点获取过一次地理位置信息，10点01分再次调用，将返回10点的缓存数据，超过该时间后缓存信息被废弃，尝试从新获取位置信息；如果值设定为0，则无条件重新获取新的地理位置信息
+        maximumAge: 2 * 60 * 1000
+    }
+)
+```
+
+## 持续监听当前地理位置信息
+
+```javascript
+// 参数和使用方法与getCurrentPosition相同
+// 返回一个数字，使用方法与setInterval类似，可以被clearWatch停止使用
+watchCurrentPosition(onSuccess, onError, options): int
+
+clearWatch(watchId): void
+```
+
+## position对象
+
+- `latitude`：纬度
+- `longitude`：经度
+- `altitude`：海拔高度（不能获取时为null）
+- `accuracy`：经纬度的精度（以米为单位）
+- `altitudeAccurancy`：海拔高度的精度（以米为单位）
+- `heading`：设备的前进方向，以面向正北方向的顺时针旋转角度来表示（不能获取时为null）
+- `speed`：设备的前进速度（以米/秒为单位，不能获取时为null）
+- `timestamp`：获取位置信息时的时间
 

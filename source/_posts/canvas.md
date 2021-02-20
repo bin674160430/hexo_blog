@@ -347,7 +347,335 @@ function draw(id) {
 }
 ```
 
+# 绘制阴影
 
+- shadowOffsetX：阴影横向位移量，默认0
+- shadowOffsetY：阴影纵向位移量，默认0
+- shadowColor：阴影颜色
+- shadowBlur：阴影模糊范围，必须>0，否则将被忽略；一般设定在0-10之间
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    if (canvas == null) {
+        return false;
+    }
+    var context = canvas.getContext('2d');
+    context.fillStyle = '#EEEEFF';
+    context.fillRect(0, 0, 400, 300);
+    context.shadowOffsetX = 10;
+    context.shadowOffsetY = 10;
+    context.shadowColor = 'rgba(100, 100, 100, 0.5)';
+    context.shadowBlur = 7.5;
+    // 图形绘制
+    context.translate(0. 50);
+    for (var i = 0; i < 3; i++) {
+        context.translate(50, 50);
+        create5Star(context);
+        context.fill();
+    }
+}
+function create5Star(context) {
+    var n = 0;
+    var dx = 100;
+    var dy = 0;
+    var s = 50;
+    // 创建路径
+    context.beginPath();
+    context.fillStyle = 'rgba(255, 0, 0, 0.5)';
+    var x = Math.sin(0);
+    var y = Math.cos(0);
+    var dig = Math.PI / 5 * 4;
+    for (var i = 0; i < 5; i++) {
+        var x = Math.sin(i * dig);
+        var y = Math.cos(i * dig);
+        context.lineTo(dx + x * s, dy + y * s);
+    }
+    context.closePath();
+}
+```
+
+# 绘制图片
+
+​	HTML5中，可以用Canvas将图片绘制在画布中。
+
+```javascript
+// 参数image是一个Image对象，xy是绘制时该图像在画布中的起始坐标
+context.drawImage(image, x, y);
+// wh是绘制图像的宽度和高度
+context.drawImage(image, x, y, w, h);
+// 将画布中已绘制好的图像全部或者局部区域复制到画布中的另一个位置上
+// sx,sy表示源图像被复制区域在画布中的起始坐标
+// sw,sh表示被复制渔区的宽度和高度
+// dx,dy表示复制后的目标图像在画布中的起始坐标
+// dw,dh表示复制后的目标图像在画布中的宽度和高度
+context.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
+
+function draw(id) {
+    var canvas = document.getElementById(id);
+    if (canvas == null) {
+        return false;
+    }
+    var context = canvas.getContext('2d');
+    context.fillStyle = '#EEEEFF';
+    context.fillRect(0, 0, 400, 300);
+    var image = new Image();
+    image.src = 'xx.jpg';
+    image.onload = function() {
+        drawImg(context, image);
+    }
+}
+function drawImg(context, image) {
+    for (var i = 0; i < 7; i++) {
+        context.drawImage(image, 0 + i * 50, 0 + i *25, 100, 100);
+    }
+}
+```
+
+图像局部特写放大处理
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    if (canvas == null) {
+        return false;
+    }
+    var context = canvas.getContext('2d');
+    context.fillStyle = '#EEEEFF';
+    context.fillRect(0, 0, 400, 300);
+    var image = new Image();
+    image.src = 'xx.jpg';
+    image.onload = function() {
+        drawImg(context, image);
+    }
+}
+function drawImg(context, image) {
+	// 绘制原始图像    
+    context.drawImage(image, 0, 0, 100, 100);
+    // 绘制将局部区域进行放大后的图像
+    context.drawImage(image, 23, 5, 57, 80, 110, 0, 100, 100);
+}
+```
+
+# 图像平铺
+
+​	按一定比例缩小后的图像将画布填满
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    if (canvas == null) {
+        return false;
+    }
+    var context = canvas.getContext('2d');
+    var image = new Image();
+    image.src = 'xx.jpg';
+    image.onload = function() {
+        drawImg(canvas, context, image);
+    }
+}
+function drawImg(canvas, context, image) {
+    // 平铺比例
+    var scale = 5;
+    // 缩小后的图像宽、高
+    var n1 = image.width / scale;
+    var n2 = image.height / scale;
+    // 平铺横向个数
+    var n3 = canvas.width / n1;
+    // 平铺纵向个数
+    var n4 = canvas.height / n2;
+    for (var i = 0; i < n3; i++) {
+        for (var j = 0; j < n4; j++) {
+            context.drawImage(image, i * n1. j * n2, n1, n2);
+        }
+    }
+}
+```
+
+还可以使用 `context.createPattern(image, type)`实现，type值如下：
+
+- no-repeat：不平铺
+- repeat-x：横向平铺
+- repeat-y：纵向平铺
+- repeat：全方向平铺
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    if (canvas == null) {
+        return false;
+    }
+    var context = canvas.getContext('2d');
+    var image = new Image();
+    image.src = 'xx.jpg';
+    image.onload = function() {
+        // 创建填充样式，全方向平铺
+        var ptrn = context.createPattern(image, 'repeat');
+        // 指定填充样式
+        context.fillStyle = ptrn;
+        // 填充画布
+        context.fillRect(0, 0, 400, 300);
+    }
+}
+```
+
+# 图像裁剪
+
+​	在画布内使用路径，只绘制路径所包括区域内的图像，不绘制路径外部的图像；使用图形上下文对象的不带参数`clip`方法来实现`canvas`裁剪，该方法使用路径来对canvas画布设置一个裁剪区域，所以，必须先创建好路径。
+​	裁剪区域一旦设置好，后面绘制的图形就都可以使用这个裁剪区域，如果要取消这个已经设置好的裁剪区域，可以调用`save`保存图形上下文当前的状态，在绘制完经过裁剪的图像后，再调用`restore`恢复之前保存的图形上下文状态，对之后绘制的图像取消裁剪区域。
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    if (canvas == null) {
+        return false;
+    }
+    var context = canvas.getContext('2d');
+    var gr = context.createLinearGradient(0, 400, 300, 0);
+    gr.addColorStop(0, 'rgb(255, 255, 0)');
+    gr.addColorStop(1, 'rgb(0, 255, 255)');
+    context.fillStyle = gr;
+    context.fillRect(0, 0, 400, 300);
+    var image = new Image();
+    image.onload = function() {
+        drawImg(context, image);
+    };
+    image.src = 'xxx.jpg';
+}
+function drawImg(context, image) {
+    create5StarClip(context);
+    context.drawImage(image, -50, -150, 300, 300);
+}
+function create5StarClip(context) {
+    var n = 0;
+    var dx = 100;
+    var dy = 0;
+    var s = 150;
+    context.beginPath();
+    context.translate(100, 150);
+    var x = Math.sin(0);
+    var y = Math.cos(0);
+    var dig = Math.PI / 5 * 4;
+    for (var i = 0; i < 5; i++) {
+        var x = Math.sin(i * dig);
+        var y = Math.cos(i * dig);
+        context.lineTo(dx + x * s, dy + y * s);
+    }
+    context.clip();
+}
+```
+
+# 像素处理
+
+​	`getImageData(sx, sy, sw, sh): CanvasPixelArray` 获取图像中的像素，sx、sy表示区域起点的坐标，sw、sh表示区域的宽度、高度；返回一个`CanvasPixelArray`对象，具有`height`、`width`、`data`等属性，`data`是一个保存像素数据的数组，具体内容有`[r1, g1, b1, a1, r2, g2, b2, a2...]`，r1、g1、b1、a1为第一个像素的红色值、绿色值、蓝色值、透明度值。
+
+```javascript
+var context = canvas.getContext('2d');
+var image = new Image();
+image.onload = function() {
+    context.drawImage(image, 0, 0);
+    var imagedata = context.getImageData(0, 0, image.width, image.height);
+}
+```
+
+​	取得像素后，可以进行例如蒙版处理、面部识别等较复杂的图像处理操作。
+​	`context.putImageData(imagedata, dx, dy[, dirtyX, dirtyY, dirtyWidth, dirtyHeight]);` dx、dy表示重绘图像的起点坐标，dirtyX、dirtyY、dirtyWidth、dirtyHeight给出一个矩形的起点坐标、宽高，如果加上这四个参数，只绘制像素数组中矩形范围内容的图像。
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    var context = canvas.getContext('2d');
+    var image = new Image();
+    image.src = 'xx.jpg';
+    image.onload = function() {
+        context.drawImage(image, 0, 0);
+        var imagedata = context.getImageData(0, 0, image.width, image.height);
+        for (var i = 0, n = image.data.length; i < n; i += 4) {
+            imagedata.data[i+0] = 255 - imagedata.data[i+0]; // red
+            imagedata.data[i+1] = 255 - imagedata.data[i+2]; // green
+            imagedata.data[i+2] = 255 - imagedata.data[i+1]; // blue
+        }
+        context.putImageData(imagedata, 0, 0);
+    }
+}
+```
+
+# 绘制文字
+
+​	`fillText(text, x, y, [maxWidth]): void`：填充文字绘制字符串， text表示文字；x、y表示坐标；maxWidth表示显示文字时的最大宽度，可以防止文字溢出。
+​	`strokeText(text, x, y, [maxWidth]): void`：用轮廓方式绘制字符串。
+
+有关文字绘制的属性：
+
+- `font`：文字字体
+- `textAlign`：文字水平对齐方式，值为 `start`（默认值）、`end`、`left`、`right`、`center`
+- `textBaseline`：文字垂直对齐方式，值为`top`、`hanging`、`middle`、`alphabetic`（默认值）、`ideographic`、`bottom`
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    var context = canvas.getContext('2d');
+    context.fillStyle = '#00f';
+    context.font = 'italic 30px sans-serif';
+    context.textBaseline = 'top';
+    // 填充字符串
+    context.fillText('实例文字', 0, 0);
+    context.font = 'bold 30px sans-serif';
+    // 轮廓字符串
+    context.strokeText('实例文字', 0, 50);
+}
+```
+
+​	`context.measureText(text): TextMetrics`：图形上下文获取文字宽度
+
+```javascript
+function draw(id) {
+    var canvas = document.getElementById(id);
+    var context = canvas.getContext('2d');
+    context.font = 'italic 20px sans-serif';
+    // 定义文字
+    var txt = '字符串的宽度为：';
+    // 获取文字宽度
+    var tml = context.measureText(txt);
+    // 绘制文字
+    context.fillText(txt, 10, 30);
+    context.fillText(tml.width, tml.width + 10, 30);
+    // 改变字体
+    context.font = 'bold 30px sans-serif';
+    // 重新获取文字宽度
+    var tm2 = context.measureText(txt);
+    // 重新绘制文字
+    context.fillText(txt, 10, 70);
+    context.fillText(tm2.width, tm2.width + 10, 70);
+}
+```
+
+# 保存与恢复状态
+
+```javascript
+var x, y;
+for (var j = 1; j > 50; j++) {
+    ctx.save();
+    // 改变绘画状态，进行想要的操作
+    ctx.fillStyle = '#fff';
+    x = 75 - Math.floor(Math.random() * 150);
+    y = 75 - Math.floor(Math.random() * 150);
+    ctx.translate(x, y);
+    drawStar(ctx, Math.floor(Math.random() * 4) + 2);
+    ctx.restore();
+}
+```
+
+# 保存文件
+
+​	`canvas.toDataURL(type);`：type的值为图片类型，例如 `image/jpeg`, `image/png`。
+
+# 动画
+
+​	Canvas制作动画实际上就是一个不断擦除、重绘的过程，具体步骤如下：
+
+1. 预先编写好用来绘图的函数，在该函数中先用`clearRect`方法画布整体或局部擦除。
+2. 使用`setInterval`方法设置动画的间隔时间。
 
 # point
 
