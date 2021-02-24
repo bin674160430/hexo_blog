@@ -206,7 +206,7 @@ javascript中最常用的是虚拟代理和缓存代理，虽然代理模式非�
 
 ```javascript
 var myImage = (function() {
-  var imgNode = document.createElement('div');
+  var imgNode = document.createElement('img');
   document.body.appendChild(imgNode);
   return function(src) {
     imgNode.src = src;
@@ -555,7 +555,7 @@ var event = {
         if (!this.clientList[key]) {
             this.clientList[key] = [];
         }
-        this.clientList[key].push(fn);s
+        this.clientList[key].push(fn);
     },
     // 取消订阅
     remove: function(key, fn) {
@@ -760,9 +760,9 @@ var Event = (function() {
         var _listen,
             _trigger,
             _remove,
-            _slice = Array.prototype.slice,
-            _shift = Array.prototype.shift,
-            _unshift = Array.prototype._unshift,
+            _slice = Array.prototype.slice, // 从某个已有的数组返回选定的元素
+            _shift = Array.prototype.shift, // 删除并返回数组的第一个元素
+            _unshift = Array.prototype._unshift, // 向数组的开头添加一个或更多元素，并返回新的长度
             namespaceCache = {},
             find,
             each = function ( ary, fn ) {
