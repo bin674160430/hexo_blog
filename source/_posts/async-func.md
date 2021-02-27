@@ -513,7 +513,8 @@ request('url')
 # Generator
 
 ​	生成迭代器函数，定义函数前面加个`*`，第一个`next()`总是启动一个迭代器，并运行到`yeild`处；第二个`next()`调用完成第一个被暂停的`yeild`表达式，第三个`next()`调用完成第二个yeild表达式，以此类推。
-​	生成器会在每个`yield`处暂停，函数的状态（作用域）会被保持，即意味着不需要闭包在调用之间保持变量状态，通过`yield`返回到主程序或事件循环队列中。
+​	执行生成器，将产生一个迭代器控制这个生成器执行其代码。
+​	生成器会在每个`yield`处暂停，函数的状态（作用域）会被保持，即意味着不需要闭包在调用之间保持变量状态，通过`yield`返回到主程序或事件循环队列中。*（yield优先级很低，几乎yield之后的任何表达式都会优先计算，只有解构...和逗号运算符优先级底，会在yield已经被求值之后才能进行绑定）*
 
 ```javascript
 function *test(x) {
@@ -657,6 +658,101 @@ for (var v of it) {
 // Hello World
 ```
 
+## 提前完成
+
+```javascript
+function *foo() {
+    yield 1;
+    yield 2;
+    yield 3;
+}
+var it = foo();
+it.next(); // { value: 1, done: false }
+it.return(42); // { value: 42, done: true }
+it.next(); // { value: undefined, done: true }
+
+function *foo1() {
+    try {
+        yield 1;
+        yield 2;
+        yield 3;
+    }
+    finally {
+        console.log('cleanup');
+    }
+}
+for (var v of foo1()) {
+    console.log(v); // 1 2 3 cleanup
+}
+var it = foo1();
+it.next(); // { value: 1, done: false }
+it.return(42); // cleanup { value: 42, done: true }
+// return相当于在生成器中当前暂停点插入了一个return x
+// 不要把yield放在finally内部，会延后return调用的完成
+
+// throw相当于在当前暂停点插入一个throw x，throw同样引起提前完成，在当前暂停点终止生成器运行
+var it2 = foo();
+it2.next(); // { value: 1, done: false }
+try {
+    it2.throw('Oops');
+} catch(err) {
+    console.log(err); // Exception: Oops
+}
+it2.next(); // { value: undefined, done: true }
+```
+
+## 错误处理
+
+```javascript
+function *foo() {
+    try {
+        yield 1;
+    } catch(err) {
+        console.log(err);
+    }
+    yield 2;
+    throw "Hello";
+}
+var it = foo();
+it.next(); // { value: 1, done: false }
+try {
+    it.throw("Hi"); // Hi { value: 2, done: false }
+    it.next();
+    console.log('never gets here');
+} catch (err) {
+    console.log(err); // Hello
+}
+```
+
+```javascript
+function *foo() {
+    try {
+        yield 1;
+    } catch(err) {
+        console.log(err);
+    }
+    yield 2;
+    throw "foo: e2";
+}
+function *bar() {
+    try {
+        yield *foo();
+        console.log('never gets here');
+    } catch (err) {
+        console.log(err);
+    }
+}
+var it = bar();
+try {
+    it.next(); // { value: 1, done: false }
+    it.throw('e1'); // e1 { value: 2, done: false }
+    it.next(); // foo: e2 { value: undefined, done: true }
+} catch (err) {
+    console.log('never gets here');
+}
+it.next(); // { value: undefined, done: true }
+```
+
 ## 异步迭代生成器
 
 ```javascript
@@ -687,6 +783,8 @@ function *main() {
 var it = main();
 it.next(); // 启动
 ```
+
+
 
 # Generator+Promise
 

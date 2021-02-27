@@ -1343,3 +1343,95 @@ addEvent(div, 'click', function() {
 Benchmark.js
 
 [jsPerf](http://jsperf.com)
+
+# 迭代器
+
+​	一种结构化模式，从源一次一个地提取数据
+
+## 接口
+
+`Iterator [required]`
+
+- `next()` 取得下一个`IteratorResult`
+  下面 return、throw是可选的，有些内置迭代器没有实现
+- `return()` 停止迭代器并返回`IteratorResult`，`return`被定义为向迭代器发送一个信号，表明消费者代码已经完毕
+- `throw()` 报错并返回`IteratorResult`，迭代器不一定完全停止
+
+`IteratorResult`
+
+- `value`当前迭代至或者最终返回值（undefined为可选的）
+- `done`布尔值，完成状态，false标识还没有迭代完，可以继续迭代
+
+`Iterable`
+
+- `@@iterator()`产生一个`Iterator`
+
+  ```javascript
+  var arr = [1,2,3];
+  var it = arr[Symbol.iterator]();
+  it.next(); // { value: 1, done: false }
+  it.next(); // { value: 2, done: false }
+  it.next(); // { value: 3, done: false }
+  // 提取最后一个值3的时候，不会报告done: true，必须再次调用next()越过数组结尾的值，才能完成信号 done: true
+  // 如果迭代器返回 { value: 3, done: true }，for..of之类的循环将会丢失3这个
+  it.next(); // { value: undefined, done: true }
+  
+  // 字符串也可以迭代，ES6中几个新的集合map等本身就是迭代器
+  // 解构赋值也能消耗迭代器
+  var it2 = [1,2,3,4,5][Symbol.iterator]();
+  var [x, y] = it2; // 取前两个元素 1,2
+  var [z, ...w] = it2; // 取第三个元素3，然后一次获取其余所有元素[4,5]
+  it2.next(); // { value: undefined, done: true }
+  ```
+
+## 自定义迭代器
+
+```javascript
+var tasks = {
+    [Symbol.iterator]() {
+        var steps = this.actions.slice();
+        return {
+            [Symbol.iterator]() {
+                return this;
+            },
+            next(...args) {
+                if (steps.length > 0) {
+                    let res = steps.shift()(...args);
+                    return { value: res, done: false };
+                } else {
+                    return { done: true }
+                }
+            },
+            return (v) {
+                steps.length = 0;
+                return { value: v, done: true };
+            }
+        }
+    },
+    actions: []
+};
+
+// 添加队列
+task.actions.push(
+	function step1(x) {
+        console.log("step 1:", x);
+        return x * 2;
+    },
+    function step2(x, y) {
+        console.log("step 2:", x, y);
+        return x + (y * 2);
+    },
+    function step3(x, y, z) {
+        console.log("step 3:", x, y, z);
+        return (x * y) + z;
+    }
+);
+
+var it = tasks[Symbol.iterator]();
+it.next(10); // step1: 10, { value: 20, done: false }
+it.next(20, 50); // step2: 20 50 { value: 120, done: false }
+it.next(20, 50, 120); // step3: 20 50 120, { value: 1120, done: false }
+
+it.next(); // { done: true }
+```
+
