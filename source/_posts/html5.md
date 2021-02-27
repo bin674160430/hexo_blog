@@ -8,11 +8,31 @@ tags:
 ---
 
 > 参考资料：
-> 《HTML5与CSS3权威指南》
+> 《HTML5与CSS3权威指南》、《HTML5与CSS3实战_第二版》
+
+# 腻子脚本
+
+​	所有现代浏览器都理解HTML5中新的语义元素（新的结构化元素、视频和音频标签），甚至老版本的IE（IE9以下）可以通过引入一段“腻子脚本”正确渲染新元素。https://modernizr.com/
+
+# doctype
+
+​	`<!DOCTYPE html>`（大小写一样）告诉浏览器文档类型，如果没有这一行，浏览器将不知道如何处理后面的内容
+
+# HTML标签与lang属性
+
+​	`<html lang="en"></html>`文档根标签，lang定义文档语言，语言列表https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+
+# 字符编码
+
+​	`<meta charset="utf-8">`多数是utf-8，https://www.w3.org/International/questions/qa-html-encoding-declarations#html5charset
 
 # HTML5新增的元素
 
 ## 一、用于构建页面的语意元素
+
+## main
+
+​	`<mian>`页面主体，web中的主要部分*（导航链接、版本信息、站点标志、广告等多个文档中重复出现的不算主内容）*，都应该放到main中，每个页面的主内容只能有一个，而且不能作为`article`、`aside`、`header`、`footer`、nav元素的后代
 
 ## article
 
@@ -293,7 +313,7 @@ tags:
 
 ## details
 
-​	`<details>`表示用户要求得到并且可以得到的细节信息。它可以与summary元素配合使用，summary元素提供标题或图例，标题是可见的，用户点击标题时，会显示细节信息。summary元素应该是detail元素的第一个子元素。（目前只有Chrome和Safari6支持）
+​	`<details>`表示用户要求得到并且可以得到的细节信息。它可以与summary元素配合使用，summary元素提供标题或图例，标题是可见的，用户点击标题时，会显示细节信息。summary元素应该是detail元素的第一个子元素。（目前只有Chrome和Safari6支持，样式会添加一个黑色小三角图标，`summary::-webkit-details-marker{ display: none; }`禁用）
 
 ```html
 <details>

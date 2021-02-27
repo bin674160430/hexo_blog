@@ -7,6 +7,8 @@ tags:
     - css
 ---
 
+> 自动加前缀（PostCSS）：https://github.com/postcss/autoprefixer
+
 # 模块与模块化结构
 
 ​	CSS 3中，没有采用总体结构，而是采用了分工协助的模块化结构，如下所示：
@@ -87,7 +89,7 @@ tags:
 
 - `:last-child`：某个元素中的最后一个子元素
 
-- `:nth-child(n)`：指定序号的子元素
+- `:nth-child(n)`：指定序号的子元素，从1开始计算
 
 - `:nth-child(odd)`, `:nth-child(2n+1)`：奇数子元素
 
@@ -622,6 +624,10 @@ div.border-box {
 
 `background-size: 40px 20px;`40px图像宽度 20px图像高度，如果需要维持图像比例，可以在设定宽高度的同时，将另一个参数设定为`auto`，如`background-size: auto 20px;`高度20px，宽度的等比适应；只设定第一个参数宽度，第二个参数高度在`safari3`中宽度和高度都使用该参数值，在`chrome8`、`Opera10`以上是宽度使用该参数，高度使用`auto`。
 
+- `auto`图片保持原声大小
+- `cover`保持图片比例，拓展至覆盖整个元素
+- `contain`保持图片比例，拓展图片让其最长边保持在元素内部
+
 ## background-break：内联元素的背景图像进行平铺时的循环方式
 
 - `bounding-box`在整个内联元素中进行平铺
@@ -642,6 +648,54 @@ div.border-box {
 </style>
 ```
 
+## 线性渐变
+
+```css
+div {
+  /* 从底部左侧开始往顶部右侧渐变，由红色到蓝色 */
+ 	background: linear-gradient(to top right, red, blue);
+  /* 指向顶部右侧45度的渐变 */
+  background: linear-gradient(45deg, red, blue);
+  /* 从不可见的区域开始渐变 */
+  background: linear-gradient(red - 50%, blue);
+  
+  background: linear-gradient(#f90 0, #f90 2%, #555 2%, #eee 50%, #555 98%, #f90 98%, #f90 100%);
+}
+```
+
+## 径向渐变
+
+参数1
+
+- `closest-side`渐变形状为圆形的情况下，渐变形状会与距离中心最近的边框相切；在椭圆形的情况下，会与距离中心最近的两个边框相切。
+- `closest-corner`渐变形状会与距离中心最近的角相切。
+- `farthest-side`和`closest-side`相反；在圆形的情况下，与距离中心最远的边相切；在椭圆的情况下，与距离中心最远的两边相切。
+- `cover`等价于`farthest-corner`。
+- `contain`等价于`closest-side`。
+
+参数2
+
+- 设置`5em`（只提供大小）生成一个直径为5em的圆形渐变效果
+- 设置`circle`生成一个沾满整个容器的圆形渐变效果（直径为最长边）
+- `40px 30px`生成一个宽40px，高30px的椭圆形
+- `ellipse`生成和容器大小一致的椭圆形
+
+参数3
+
+- `at top right`径向渐变的中心在右上方
+- `at right 100px top 20px`径向渐变的中心在距右边宽100px，上边框20px处
+- `at center left`径向渐变的中心在左边框中间处
+
+```css
+div{
+  /* 直径12rem的圆形渐变 */
+  background: radial-gradient(12rem circle at bottom, yellow, orange, red);
+  background: radial-gradient(closest-side circle at center, #333);
+}
+```
+
+https://projects.verou.me/css3patterns/
+
 # transform变形
 
 ## scale(x, y) 缩放
@@ -660,6 +714,10 @@ div.border-box {
 
 默认以元素的中心作为焦点进行变形，水平值有left、center、right；垂直值有top、center、bottom
 
+## matrix()
+
+相当于translate, scale, skew的组合使用
+
 # Transition 平滑过渡
 
 `transition: property duration timing-function`
@@ -671,8 +729,8 @@ div {
     transition
 }
 div:hover {
-    transition: color 1s linear, background-color 1s linear;
-    /* transition: all 1s linear; */
+    transition: color 1s linear 0s, background-color 1s linear;
+    /* transition: all 1s linear 0s; */
 }
 ```
 
@@ -734,3 +792,38 @@ div {
 # initial取消对元素的样式指定
 
 ​	initial将使用属性设定的默认值，不考虑浏览器对元素追加了什么样式。
+
+# 特性查询
+
+​	*IE11之前和Safari（IOS8之前）不支持*
+
+# calc()
+
+​	计算函数（加减乘除），android 4.3及以下版本的chrome不支持，其他都支持。
+
+`.thing { width: calc(50% - 10px) }`
+
+# 相对视口viewport长度
+
+- vw：viewport宽度
+- vh：viewport高度
+- vmin：viewport最小值，等于vw、vh中较小的值
+- vmax：viewport最大值，等于vw或vh中较大的值
+
+# 滤镜filter
+
+*ie不支持* https://www.runoob.com/cssref/css3-pr-filter.html
+
+- `filter: url('./img/filters.svg#filterRed')`定义一个svg滤镜使用。
+- `filter: blur(3px)` 使用一个简单的长度值，高斯模糊。
+- `filter: brightness(2)` 使用从0到1值或者从0%到100%的值，0/0%全黑，1/100%没有变化，任何更高的值意味着更高的亮度。
+- `filter: contrast(2)` 使用从0到1、0%到100%的值，0/0%全黑，1/100%没有变化，更高的值意味着更高的对比度。
+- `filter: drop-shadow(4px 4px 6px #ccc)` 阴影。
+- `filter: grayscale(0.8)` 使用从0到1、0%到100%的值来表示元素灰度化的程度，0表示没有灰度化，1表示完全灰度化。
+- `filter: hue-rotate(25deg)` 使用从0度到360度表示颜色在色轮上的变化角度。
+- `filter: invert(75%)` 使用从0到1、0%到100%的值表示元素反色程度。
+- `filter: opacity(50%)` 使用从0到1、0%到100%的值表示元素的透明度。
+- `filter: saturate(15%)` 使用从0到1、0%到100%的值表示元素的饱和度，高于1/100%会增加额外的饱和度。
+- `filter: sepia(0.74)` 使用从0到1、0%到100%来为元素添加褐色滤镜，0/0%没有变化，更高的值表示褐色化程度提升，1/100%最高效果。
+- 使用多个滤镜，用空格隔开 `filter: opacity(10%) blur(2px) sepia(35%);`
+
