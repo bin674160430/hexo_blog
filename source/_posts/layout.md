@@ -11,7 +11,10 @@ tags:
 
 # float、position布局
 
-​	css3之前多数是使用float、position进行布局，存在的问题也很明显，整体高度适应、元素底部对齐、多出空白区域
+​	css3之前多数是使用float、position进行布局，存在的问题也很明显，整体高度适应、元素底部对齐、多出空白区域；
+
+- 浮动元素的宽度设定百分比，最终计算结果在不同平台上的结果不一样（有的浏览器向上取整，有的向下取整），有些时候某些区块会跑到其他区块底下，有时这些区块一侧又会莫名出现一块明显的间隙。
+- 通常都要清除浮动，才能避免父盒子/元素折叠。
 
 # 多栏布局
 
@@ -142,17 +145,68 @@ div > h1 {
 
 
 
-# viewport
+# 图片宽度适配
+
+`img { max-width: 100%; }`很有效地处理图片宽度与容器宽度适配的问题，为什么不用width？因为用width之后，图片将按照容器宽度展示，忽略自身原有宽度，即便是logo类一样的小图，也会直接按照容器宽度来适配显示。
+
+# 响应式图片
+
+## 通过srcset切换分辨率
+
+​	假设一张图片有三种分辨率版本，一张小的针对屏幕，一种中等的针对中等屏幕，一张大的针对其他所有屏幕；`src`指定1倍大小的小图片，且在不支持srcset的浏览器中用作后备，所以才用src指定最小图片，让旧浏览器以最快的速度获取；对于支持srcset的浏览器，通过逗号分隔符的图片描述，让浏览器决定选择，下例中的1.5x和2x数字可以是任意整数。*（问题：1440px宽，1x的屏幕会拿跟480px宽、3x屏幕相同的图片，这或许不是想要的结果）*
 
 ```html
-<meta content="initial-scale=1.0" name="viewport">
+<img src="scones_samll.jpg" srcset="scones_medium.jpg 1.5x, scones_large.jpg 2x" alt="Scones taste amazing">
 ```
 
-这段代码告诉移动浏览器使用真实的页面比例，不要缩放，单相同的页面在不同的移动设备上，显示将会不同，如下图所示
+## srcset、sizes联合切换
 
-{% image 1.jpg 图片 %}
+​	在响应式设计中，经常看到图片在小屏幕中全屏显示，在大屏幕只显示一半宽；下例中`srcset`添加了w后缀，告诉浏览器图片有多宽，但并不是真实大小，只是对浏览器的一个提示，大致相当于`css`像素大小。`sizes`第一个值告诉浏览器最小宽度为`17em`的设备，想让图片宽度约为`100vw`；第二个值告诉浏览器，如果设备宽度大于等于`40em`，让图片显示`50vw宽`
+
+```html
+<img srcset="scones-small.jpg 450w, scones-medium.jpg 900w" sizes="(min-width: 17em) 100vw, (min-width: 40em) 50vw" src="sconessmall.jpg" alt="Scones">
+```
+
+## picture元素
+
+​	一个容器，为img指定图片提供便利；`picture`中`img`标签必须提供
+
+```html
+<picture>
+  <!-- 如果屏幕大于等于30em，替换成cake-table.jpg -->
+	<source media="(min-width: 30em)" srcset="cake-table.jpg">
+  <source media="(min-width: 60em)" srcset="cake-shop.jpg">
+  <img src="scones.jpg" alt="One Way or another, you Will get cake.">
+</picture>
+
+
+<!-- type图片新格式，通常用于指定视频来源 -->
+<!-- 如果浏览器支持webp格式图片就显示webp，不支持显示img -->
+<picture>
+	<source type="image/webp" srcset="scones-baby-yeah.webp">
+  <img src="scones-baby-yeah.jpg" aly="again, you will eat cake.">
+</picture>
+```
+
+# viewport
+
+浏览器中用于呈现网页区域叫viewport视口），viewport通常并不等同于屏幕大小，尤其是可以缩放浏览器窗口的情况下。
+
+```html
+<!-- 告诉移动浏览器使用真实的页面比例，不允许缩放user-scalable=no -->
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+
+<!-- 告诉移动浏览按照设备宽度device-width渲染网页内容 -->
+<meta name="viewport" content="width=device-width">
+
+<!-- 允许用户将页面放大到设备宽度的三倍，最小可以缩小到设备宽度的一半 -->
+<meta name="viewport" content="width=device-width, maximum-scale=3, minimum-scale=0.5">
+```
 
 # 媒体查询
+
+​	分割媒体查询的好处：针对性强，分别对应不同的样式；
+​	坏处有：多一个文件就要多一次HTTP请求，HTTP请求多了会明显影响页面加载速度。
 
 ```css
 @media (media-feature-name: value) {
@@ -184,6 +238,9 @@ div > h1 {
 @media (min-width: 600px) and (max-width: 700px) { 
  /* 600px - 700px. */ 
 }
+
+/* @import 与媒体查询 */
+@import url('phone.css') screen and (max-width: 360px);
 ```
 
 ```html
@@ -193,6 +250,8 @@ div > h1 {
  <link rel="stylesheet" media="screen" href="styles.css"> 
  <!-- Use this stylesheet to print the page. --> 
  <link rel="stylesheet" media="print" href="print_styles.css"> 
+ <!-- 组合媒体查询 -->
+ <link rel="stylesheet" media="screen and (orientation: portrait) and (min-width: 800px)" href="800width-portait-screen.css">
 </head>
 ```
 
