@@ -23,6 +23,7 @@ tags:
 - GreenSock动画平台：http://greensock.com
 - Velocity.js：http://julian.com/research/velocity/
 - Snap svg：http://snapsvg.io/
+- FeatureTests.io：https://featuretests.io  ES6+语义支持测试
 
 # SVG自动化压缩工具：
 

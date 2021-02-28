@@ -610,3 +610,543 @@ o3.foo(); // foo
 ## Number.isSafeInteger()
 
 ​	检查一个值为整数并且在Number.MIN_SAFE_INTEGER~Number.MAX_SAFE_INTEGER范围之内。
+
+# 元编程
+
+​	利用语言本身的内省能力使代码的其余部分更具描述性、表达性和灵活性。
+​	**注意：不要编写过于机灵的代码，让未来的代码维护者难以理解。**
+
+## 函数名称
+
+​	默认情况下，`name`属性不可写，但可配置，可使用`Object.defineProperty()`手动修改。
+
+```javascript
+var abc = function() {};
+abc.name; // abc
+
+(function() {}); // name:
+(function *() {}); // name:
+window.foo = function() {}; // name:
+
+class Awesome {
+    constructor() {} // name: Awesome
+    funny() {} // name: funny
+}
+
+var c = class Awesome {}; // name: Awesome
+
+var o = {
+    foo() {}, // name: foo
+    *bar() {}, // name: bar
+    baz: () => {}, // name: baz
+    bam: function() {}, // name: bam
+    get qux() {}, // name get qux
+    set fuz() {}, // name set fuz
+    ['b' + 'iz']: function() {}, // name: biz
+    [Symbol('buz')]: function() {}, // name: [buz]
+};
+
+var x = o.foo.bind(o); // name: bound foo
+(function(){}).bind(o); // name: bound
+
+export default function() {} // name: default
+
+var y = new Function(); // name: anonymous
+
+var GeneratorFunction = function *() {}.__proto__.constructor;
+var z = new GeneratorFunction(); // name: anonymous
+```
+
+## 元属性
+
+​	元属性以属性访问的形式提供特殊的其他方法无法获取的元信息。
+
+```javascript
+class Parent {
+    constructor() {
+        // 关键字new用作属性防伪上下文，在构造器调用，形成一个虚拟上下文，使得new.target指向调用new的目标构造器
+        if (new.target === Parent) {
+            console.log('Parent instantiated');
+        } else {
+            console.log('A child instantiated');
+        }
+    }
+}
+class Child extends Parent {}
+
+var a = new Parent(); // Parent is instantiated
+var b = new Child(); // A child instantiated
+```
+
+## 公开符号
+
+- `Symobl.iterator ` `@@iterator`表示对象上的一个专门属性，语言机制自动在该属性上寻找一个构造一个迭代器来消耗对象的值
+
+  ```javascript
+  var arr = [4,5,6,7,8,9];
+  for (var v of arr) {
+      console.log(v); // 4 5 6 7 8 9
+  }
+  // 定义只在奇数索引产生值的迭代器
+  arr[Symobl.iterator] = function *() {
+      var idx = 1;
+      do {
+          yield this[idx];
+      } while ((idx += 2) < this.length);
+  };
+  for (var v of arr) {
+      console.log(v); // 5 7 9
+  }
+  ```
+
+- `Symbol.toStringTag`与`Symbol.hasInstance`最常见的一个元编程任务，在一个值上进行内省找出它是什么种类，通常用于确定适合执行哪种运算，最常用的内省技术是`toString()`和`instanceof`
+
+  ```javascript
+  function Foo() {}
+  var a = new Foo();
+  a.toString(); // [object object]
+  a instanceof Foo; // true
+  
+  // 操控 toString, instanceof 行为特性
+  function Foo(greeting) {
+      this.greeting = greeting;
+  }
+  Foo.prototype[Symbol.toStringTag] = 'Foo'; // @@toStringTag符号指定了字符串化时使用的字符串值
+  // @@hasInstance符号是构造器函数上的一个方法，接受实例对象得到值，通过返回true、false指示该值是否可以被认为是一个实例
+  // 必须使用object.defineProperty()，因为Function.prototype上的@@hasInstance是writable: false(不可写)
+  Object.defineProperty(Foo, Symbol.hasInstance, {
+      value: function(inst) {
+          return inst.greeting == 'hello';
+      }
+  });
+  
+  var a = new Foo('aa');
+  var b = new Foo('bb');
+  b[Symbol.toStringTag] = 'cool';
+  
+  a.toString(); // [object Foo]
+  String(b); // [object cool]
+  
+  a instanceof Foo; // true
+  b instanceof Foo; // false
+  ```
+
+- `Symobl.species` `@@species`符号控制生成新实例时，类的内置方法使用哪一个构造器。
+
+  ```javascript
+  class Cool {
+      // 把@@species推迟到子类
+      static get [Symbol.species]() { return this; }
+      // 如果需要定义生成新实例的方法，使用new this.constructor[Symbol.species]()模式元编程
+      again() {
+          return new this.constructor[Symbol.species]();
+      }
+  }
+  
+  class Func extends Cool {}
+  
+  class Awesome extends Cool {
+      // 强行指定@@species为父构造器
+      static get [Symbol.species]() { return Cool; }
+  }
+  
+  var a = new Func(),
+      b = new Awesome(),
+      c = a.again(),
+      d = b.again();
+  
+  c instanceof Fun; // true
+  d instanceof Awesome; // false
+  d instanceof Cool; // true
+  ```
+
+- `Symbol.toPrimitive`对象为了某个操作（如==或者+）必须被强制转换为一个原生类型值
+
+  ```javascript
+  var arr = [1,2,3,4,5];
+  arr + 10; // 1,2,3,4,510
+  
+  arr[Symbol.toPrimitive] = function(hint) {
+      // 加法+运算没有提示（default），乘法（number），string提示（string）
+      if (hint == 'default' || hint == 'number') {
+          return this.reduce(function(acc, curr) {
+              return acc + durr;
+          }, 0);
+      }
+  };
+  arr + 10; // 25
+  ```
+
+- `Symbol.isConcatSpreadable` `@@isConcatSpreadable`对象的布尔属性，用来指示如果把它传给一个数组的`concat()`是否将其展开
+
+  ```javascript
+  var a = [1,2,3],
+      b = [4,5,6];
+  b[Symbol.isConcatSpreadable] = false;
+  [].concat(a, b); // [1,2,3,[4,5,6]]
+  ```
+
+# 代理 Proxy
+
+​	“封装”一个普通对象从而创建一个特殊的**代理对象**，可以在代理对象上注册处理函数，除了把操作转发给原始目标、被封装对象之外，还有执行额外的逻辑。函数如下：
+
+- `get()` 通过`[[Get]]`，在代理上访问一个属性（`Reflect.get()`, `.`属性运算符、`[..]`属性运算符）
+- `set()` 通过`[[Set]]`，在代理上设置一个属性值（`Reflect.set()`、赋值运算符`=`、目标为对象属性的解构赋值）
+- `deleteProerty()` 通过`[[Delete]]`，从代理对象上删除一个属性（`Reflect.deleteProperty()`、`delete`）
+- `apply()`通过`[[Call]]`，将代理作为普通函数、方法调用（`Reflect.apply()`、`call()`、`apply()`、`()`调用运算符）
+- `construct()` 通过`[[Construct]]`，将代理作为构造函数调用（`Reflect.construct()`、`new`）
+- `getOwnPropertyDescriptor()` 通过`[[GetOwnProperty]]`，从代理中提取一个属性描述符（`Object.getOwnPropertyDescriptor()`、`Reflect.getOwnPropertyDescriptor()`）
+- `defineProperty()` 通过`[[DefineOwnProerty]]`，在代理上设置一个属性描述符（`Object.defineProerty()`、`Reflect.defineProperty()`）
+- `getPrototypeOf()` 通过`[[GetPrototypeOf]]`，得到代理的`[[Prototype]]`（`Object.getPrototypeOf()`、`Reflect.getPrototypeOf()`、`__proto__`、`Object.isPrototypeOf()`、`instanceof`）
+- `setPrototypeOf()` 通过`[[SetPrototypeOf]]`，设置代理的`[[Prototype]]`（`Object.setPrototypeOf()`、`Reflect.setPrototypeOf()`、`__proto__`）
+- `preventExtensions()` 通过`[[PreventExtensions]]`，使得代理变成不可扩展的（`Object.preventExtensions`、`Reflect.preventExtensions()`）
+- `isExtensible()` 通过`[[IsExtensible]]`，检测代理是否可扩展（`Object.isExtensible()`、`Reflect.isExtensible()`）
+- `ownKeys()` 通过`[[OwnPropertyKeys]]`，提取代理自己的属性、符号属性（`Object.keys()`、`Object.getOwnPropertyNames()`、`Object.getOwnSymbolProperties()`、`Reflect.ownKeys()`、`JSON.stringify()`）
+- `enumerate()` 通过`[[Enumerate]]`，取得代理拥有的和“继承来的”可枚举属性的迭代器（`Reflect.enumerate()`、`for..in`）
+- `has()` 通过`[[HasProperty]]`，检查代理是否拥有或者“继承了”某个属性（`Reflect.has()`、`Object.hasOwnProerty()`、`"prop" in obj`）
+
+```javascript
+var obj = { a: 1 },
+    handlers = {
+        get(target, key, context) {
+            // target === obj
+            // context === pobj
+            console.log('accessing: ', key);
+            // 执行相应的元编程任务
+            return Reflect.get(target, key, context);
+        }
+    },
+    pobj = new Proxy(obj, handlers);
+
+obj.a; // 1
+pobj.a; // accessing: a
+	    // 1
+```
+
+## 代理的局限性
+
+​	`typeof`、`+`、`==`、`===`底层基本元素是无法拦截的
+
+## 可取消代理
+
+​	`Proxy.revocable(target, handler)`返回一个有两个属性`proxy`、`revoke`的对象, `revoke()`取消代理，任何对它的访问都会抛出`TypeError`
+
+```javascript
+var obj = { a: 1 },
+    handlers = {
+        get(target, key, context) {
+            console.log('accessing: ', key);
+            return target[key];
+        }
+    },
+    { proxy: pobj, revoke: prevoke } = Proxy.revocable(obj, handlers);
+pobj.a; // accessing: a
+	    // 1
+prevoke();
+pobj.a; // TypeError
+```
+
+## 代理前后
+
+```javascript
+// 代理在前设计
+var obj = {
+        a: 1,
+        foo() {
+            console.log("a: ", this.a);
+        }
+    },
+    handlers = {
+        get(target, key, context) {
+            if (Reflect.has(target, key)) {
+                return Reflect.get(target, key, context);
+            } else {
+                throw "no such property/method"
+            }
+        },
+        set(target, key, val, context) {
+            if (Reflect.has(target, key)) {
+                return Reflect.set(target, key, val, context);
+            } else {
+                throw 'no such property/method';
+            }
+        }
+    },
+    pobj = new Proxy(obj, handlers);
+
+pobj.a = 3;
+pobj.foo(); // a: 3
+// 代理对象没有的属性和方法，将抛出错误
+pobj.b = 4; // Error: no such property/method
+pobj.bar(); // Error: no such property/method
+
+
+// 代理在后设计
+var handler2 = {
+        get() {
+            throw "no such property/method";
+        },
+        set() {
+            throw "no such property/method";
+        }
+    },
+    pobj2 = new Proxy({}, handler2),
+    obj2 = {
+        a: 1,
+        foo() {
+            console.log("a: ", this.a);
+        }
+    };
+Object.setPrototypeOf(obj, pobj);
+obj.a = 3;
+obj.foo(); // a: 3
+// 遍历整个[[Prototype]]没有发现匹配的属性和方法
+obj.b = 4; // Error: no such property/method
+obj.bar(); // Error: no such property/method
+```
+
+## 代理hack[[Prototype]]链
+
+​	`[[Prototype]]`机制原作的主要通道是`[[Get]]`运算，当直接对象中没有找到一个属性的时候，`[[Get]]`会自动把这个运算转给`[[Prototype]]`对象处理。
+
+```javascript
+var obj1 = {
+        name: "obj-1",
+        foo() {
+            console.log("obj1.foo: ", this.name);
+        }
+    },
+    obj2 = {
+        name: "obj-2",
+        foo() {
+            console.log("obj2.foo: ", this.name);
+        },
+        bar() {
+            console.log("obj2.bar: ", this.name);
+        }
+    },
+    handlers = {
+        get(target, key, context) {
+            if (Reflect.has(target, key)) {
+                return Reflect.get(target, key, context);
+            } else {
+                // 伪装多个[[Prototype]]
+                for (var p of target[Symbol.for("[[Prototype]]")]) {
+                    if (Reflect.has(p, key)) {
+                        return Reflect.get(p, key, context);
+                    }
+                }
+            }
+        }
+    },
+    obj3 = new Proxy(
+    	{
+            name: 'obj-3',
+            baz() {
+                this.foo();
+                this.bar();
+            }
+        },
+        handlers
+    );
+
+// 伪装多个[[Prototype]]链接
+obj3[Symbol.for("[[Prototype]]")] = [obj1, obj2];
+obj3.baz();
+// obj1.foo: obj-3
+// obj2.bar: obj-3
+```
+
+# Reflect
+
+​	平凡对象，持有对应各种可控的元编程任务的静态函数，这些函数一对一对应着代理可以定义的处理函数方法；方法和`Object`上的同名方法类似，区别是：如果第一个参数（`target`目标对象）不是对象的话，`Object`会视图把它转换成一个对象，而`Reflect`只会抛出一个错误。
+
+## 属性排序
+
+1. 按照数字上升排序，枚举所有整数索引拥有的属性；
+2. 按照创建顺序枚举其余拥有的字符串属性名；
+3. 按照创建顺序枚举拥有的符号属性；
+
+```javascript
+var o = {}; 
+o[Symbol("c")] = "yay"; 
+o[2] = true; 
+o[1] = true; 
+o.b = "awesome"; 
+o.a = "cool"; 
+Reflect.ownKeys( o ); // [1,2,"b","a",Symbol(c)] 
+Object.getOwnPropertyNames( o ); // [1,2,"b","a"] 
+Object.getOwnPropertySymbols( o ); // [Symbol(c)]
+```
+
+# 特性测试
+
+FeatureTests.io（https://featuretests.io）测试浏览器是否支持ES6+语法和语义行为特性
+
+# 尾递归调用
+
+​	在一个函数内部调用另外一个函数的时候，会分配第二个栈帧来独立管理第二个函数调用的变量、状态，这个分配不但消耗处理时间，也消耗了额外的内存。通常调用栈链10-15个从一个函数到另外一个函数的跳转，内存使用并不会造成任何实际问题；要考虑的是递归编程，调用栈的深度很容易达到成百上千。**尾调用**的函数调用模式可以避免额外栈帧分配的方式进行优化。
+​	**尾调用**是一个return函数调用的语句，除了调用后返回值之外，没有任何其他动作。
+
+```javascript
+"use strict"
+function foo(x) {
+    return x * 2;
+}
+function bar(x) {
+    // 这不是尾调用
+    // foo()调用完，还得执行1 + ..， 所以bar()调用的状态需要被保留
+    return 1 + foo(x);
+}
+bar(10); // 21
+
+
+function baz(x) {
+    x = x + 1;
+    if (x > 10) {
+        return foo(x);
+    } else {
+        // 递归，x + 1在bar()调用之前求值，在调用结束之后，只有return
+        // 不需要对下一个函数调用创建一个新的栈帧，值需要复用已有的栈帧
+        // 因为一个函数不需要保留任何当前状态
+        return baz(x + 1);
+    }
+}
+```
+
+## 尾调用重写
+
+```javascript
+"use strict"
+function foo(x) {
+    if (x <= 1) return 1;
+    // 不是尾调用优化，每次结果在 return 之前都要加上 (x / 2)
+    return (x / 2) + foo(x - 1);
+}
+foo(123456); // RangeError
+
+// 优化一下，使代码更适合ES6引擎TCO(尾调用优化)
+var foo = (function() {
+    function _foo(acc, x) {
+        if (x <= 1) return acc;
+        return _foo((x / 2) + acc, x - 1);
+    }
+    return function(x) {
+        return _foo(1, x);
+    }
+})();
+foo(123456); // 3810376848.5
+```
+
+## （递归展开）非尾调用优化
+
+​	`trampolining`把每个部分结果用一个函数表示，这些函数或者返回另外一个部分结果函数，或者返回最终结果，然后只需要循环知道得到的结果不是函数，得到的就是最终结果。
+
+```javascript
+"use strict"
+function trampoline(res) {
+    while (typeof res === 'function') {
+        res = res();
+    }
+    return res;
+}
+
+var foo = (function() {
+    function _foo(acc, x) {
+        if (x <= 1) return acc;
+        // 每个内部的partial()只是返回到trampoline的while循环，trampolining运行函数并允许下一次的循环迭代
+        // partial()不会递归调用自身，只是返回一个函数，栈深度保持不变，可以允许任意长的时间
+        return function partial() {
+            return _foo((x / 2) + acc, x - 1);
+        }
+    }
+    return function(x) {
+        return trampoline(_foo(1, x));
+    }
+})();
+
+foo(123456); // 3810376848.5
+```
+
+# Object.observe()
+
+​	监听数据对象的更新，可观察的改变有6中类型：
+
+- `add` 添加属性
+- `update` 更新属性
+- `delete` 删除属性
+- `reconfigure`一个对象通过`Object.defineProperty()`重新配置属性，比如修改`writable`，就会触发
+- `setPrototype`
+- `preventExtensions`一个对象通过`Object.preventExtensions()`变为不可扩展，就会触发
+
+```javascript
+var obj = { a: 1, b: 2 };
+Object.observe(
+	obj,
+    function(changes) {
+        for (var change of changes) {
+            console.log(change);
+        }
+    },
+    ['add', 'update', 'delete']
+);
+obj.c = 3; // { name: 'c', object: obj, type: 'add' }
+obj.a = 42; // { name: 'a', object: obj, type: 'update', oldValue: 1 }
+delete obj.b; // // { name: 'b', object: obj, type: 'delete', oldValue: 2 }
+```
+
+## 自定义改变事件
+
+```javascript
+function observe(changes) {
+    for (var change of changes) {
+        if (change.type == 'recalc') {
+            change.object.c =
+                change.object.oldValue +
+                change.object.a +
+                change.object.b;
+        }
+    }
+}
+
+function changeObj(a, b) {
+    var notifier = Object.getNotifier(obj);
+    obj.a = a * 2;
+    obj.b = b * 3;
+    // 把事件排到一个集合中
+    notifier.notify({
+        type: 'recalc',
+        name: 'c',
+        oldValue: obj.c
+    });
+    // 还有一种方式处理 performChange
+    /*
+    notifier.performChange('recalc', function() {
+        return {
+            name: 'c',
+            oldValue: this.c
+        }
+    });
+    */
+}
+
+var obj = { a: 1, b: 2, c: 3 };
+Object.observe(
+	obj,
+    observer,
+    ['recalc']
+);
+changeObj(3, 11);
+obj.a; // 12
+obj.b; // 30
+obj.c; // 3
+// recalc事件没有发送
+// 默认情况下，改变会在当前时间循环的最后发送
+// 可以使用 Object.deliverChangeRecords(observer) 立即发送
+// 事件发送后
+obj.c; // 42
+```
+
+## 结束观测
+
+​	`Object.unobserve()`停止观测一个对象的改变时间

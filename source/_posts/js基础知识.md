@@ -1434,4 +1434,3 @@ it.next(20, 50, 120); // step3: 20 50 120, { value: 1120, done: false }
 
 it.next(); // { done: true }
 ```
-
