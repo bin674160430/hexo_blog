@@ -49,6 +49,18 @@ foo: for (var i = 0; i < 4; i++) {
 
 
 
+# for声明变量指向数组长度
+
+```javascript
+const arr = [1,2,3];
+// 为什么不直接用 i < arr.length 作为条件？
+// 假设在遍历的时候有修改数据长度，那么将不好处理之前的数组；
+// 常见场景——数据监听变更前后
+for (let i = 0, l = arr.length; i < l; i++) {
+    
+}
+```
+
 # 多重判断Array.includes
 
 ```javascript

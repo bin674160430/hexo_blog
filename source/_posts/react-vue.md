@@ -151,3 +151,87 @@ vm.dataList = [3, 4, 5, 6, 7] // 数据进行增删
 `MVVM`渲染列表的时候，由于每一行都有自己的数据作用域，所以通常都是每一行有一个对应的`ViewModel`实例，`MVVM`列表渲染的初始化几乎一定比React慢，创建`ViewModel` / `scope` 实例比起 Virtual DOM来说昂贵得多，`MVVM`实现的一个共同问题就是在列表渲染的数据源变动时，如何有效地复用已经创建的`ViewModel`实例和`DOM`元素
 
 https://blog.csdn.net/CystalVon/article/details/78428036
+
+# MVVM
+
+数据变化，视图自动变化
+
+`model` -> `view-model` -> `view`：数据、视图数据桥梁、视图
+
+# 侵入式和非侵入式
+
+```javascript
+// vuew数据变化
+this.a ++; // 非侵入式，改变数据的时候不需要调用其他api去修改
+
+// react数据变化， 侵入式
+this.setState({
+    a: this.state.a + 1
+});
+
+// 小程序数据变化，侵入式
+this.setData({
+    a: this.data.a + 1
+});
+```
+
+# Vue中的defineReactive(data, key, val)
+
+函数闭包val替代补足`Object.defineProperty() getter, setter`中需要变量检测的缺陷
+
+```javascript
+function defineReactive(data, key, val) {
+    Object.defineProperty(obj, key, {
+        enumerable: true,
+        configurable: true,
+        get() {
+            return val;
+        },
+        set(newValue) {
+            if (val === newValue) {
+                return;
+            }
+            val = newValue;
+        }
+    });
+}
+```
+
+# Vue中数组的响应式监测实现
+
+以`Array.prototype`为原型，创建了一个`arrayMethods`的对象，再使用`Object.setPrototypeof(o, arrayMethods)`修改对象的原型`__proto__`指向`arrayMethods`
+
+```javascript
+const arrayMethods = Object.create(Array.prototype);
+
+const methodsNeeChange = [
+    'push',
+    'pop',
+    'shift',
+    'unshift',
+    'splice',
+    'sort',
+    'reverse'
+];
+methodsNeedChange.forEach(methodName => {
+    const original = Array.prototype[methodName];
+    Object.defineProperty(arrayMethods, methodName, {
+        function() {
+            original.apply(this, arguments);
+        },
+        enumerable: false,
+        writable: true,
+        configurable: true
+    });
+});
+
+// 数组调用
+const arr = [1,2,3];
+Object.setPrototypeof(arr, arrayMethods);
+```
+
+# Vue中的依赖思想
+
+在`getter`中搜集依赖，在`setter`中触发依赖，把依赖搜集的代码封装成一个`Dep`类，用来管理依赖，每个Observer的实例成员中都有一个`Dep`实例；`Watcher`是一个中介，数据发生变化时通过`Watcher`中转，通知组件。
+
+{% image vue.png %}
