@@ -410,6 +410,20 @@ var bar = foo.bind(ø, 2);
 bar(3); // a:2, b:3
 ```
 
+## 分辨this和function的调用关系
+
+- 如果`function`是一个对象的属性，那么在调用`function`时，`this`就是这个对象
+- `function`调用的表达式包含`. []`属性符，那么`this`就是属性符之前的对象，如`myObj.func`, `myObj['func']`，`func`被调用时的`this`是`myObj`
+- 如果`function`不是作为一个对象的属性，调用`function`时，`this`是全局对象
+- 如果在`function`之前使用`new`，将创建一个新的对象，该`function`也会被调用，而`this`是新创建的对象
+- 通过`function`的`apply`和`call`方法来指定它被调用时的this值，那么`apply`、`call`的第一个参数就是`this`
+
+## this是动态指针，不是静态引用，总是指向当前作用域对象
+
+- `callee`：函数的集合包含一个静态指针，它始终指向参数集合`arguments`所属的函数
+- `prototype`：函数包含的一个半静态指针，在默认状态下它书中指向函数附带的原型对象，可以改变去指向其他对象
+- `constructor`：对象包含的一个指针，始终指向创建该对象的构造函数
+
 # 类函数
 
 `javascript`根本就不存在类，所有函数默认都有拥有一个`prototype`的共有且不可美哦局的属性，它会指向另一个对象。由于`javascript`没有类的复制机制，不能创建一个类的多个实例，只能创建多个对象，它们`prototype`关联的是同一个对象，在默认情况下并不会进行复制，因此这些对象之间并不会完全失去联系，它们是互相关联的
@@ -535,6 +549,50 @@ console.log(a.name); // lan
 ## Object.prototype
 
 ​	所有的`prototype`链最终都会指向内置的`Object,prototype`
+
+```javascript
+// Object和Function都可以定义原型，Object被视为Function的子类
+Object.prototype.a = 1; // 声明Object的原型属性a为1
+Function.prototype.a = 2; // 声明Function的原型属性a为2
+
+console.log(Object.a); // 1
+console.log(Function.a); // 2
+
+var o = {};
+console.log(o.a); // 1, 指向Object构造函数的原型
+
+var f = Object;
+console.log(f.a); // 2, 指向Function构造函数原型
+
+var f1 = new Function() {};
+console.log(f1.a); // 2
+
+var o1 = new Object();
+o1.a; // 1
+```
+
+在`JavaScript`中，一切都是对象，函数是第一型，`Function`和`Object`都是函数的实例，构造函数的父原型指向`Function`的原型，`Function.prototype`的父原型是`Object`的原型，`Object`的父原型也指向了`Function`的原型，`Object.prototype`是所有父原型的顶层。
+
+```javascript
+Function.prototype.a = function() { console.log('Function'); };
+Object.prototype.a = function() { console.log('Object'); };
+
+function f() {
+    this.a = 'a';
+}
+f.prototype = {
+    w: function() {
+        console.log('w');
+    }
+}
+
+f instanceof Function; // true, f是Function的实例
+f.prototype instanceof Object; // true, f的原型是对象
+Function instanceof Object; // true, Function 是 Object的实例
+Function.prototype instanceof Object; // true, Function的原型是Object实例
+Object instanceof Function; // true, Object是Function的实例
+Object.prototype instanceof Function; // false, Object.prototype是所有父原型的顶层
+```
 
 ## 隐式屏蔽
 
@@ -1087,7 +1145,7 @@ func();
 
 ## currying 函数柯里化，部分求值
 
-一个`currying`函数首先会接收一些参数，该函数并不会立即求值，而是继续返回另外一个函数，刚才传入的参数在函数形成的闭包中被保存起来。等待函数被真正需要求值的时候，之前传入的所有参数都会一次性用于求值。
+一个`currying`函数首先会接收一些参数，该函数并不会立即求值，而是继续返回另外一个函数，刚才传入的参数在函数形成的闭包中被保存起来。等待函数被真正需要求值的时候，之前传入的所有参数都会一次性用于求值。*（利用已有的函数，再创建一个动态的函数，该动态函数内部还是通过已有的函数来发生作用，只是传入更多的参数来简化函数的参数方面调用）*
 
 例如：编写一个计算每月开销的函数。
 

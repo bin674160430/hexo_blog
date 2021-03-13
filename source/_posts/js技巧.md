@@ -315,3 +315,32 @@ s2.normalize().length; // 1
 // 如果符号多，存在问题的
 ```
 
+# 变量比较
+
+```javascript
+// 限定年龄在6岁及以上，18岁之间，或者65岁及以上
+var age;
+if ((6 <= age && age < 18) || 65 <= age) {
+    // 小于变量的值放在变量左边，大于的在右边，阅读起来更为清晰
+}
+```
+
+# 字符串字节长度
+
+`String`对象的`length`属性，不管字符是单字节，还是双字节，都作为一个来计算，如果需要计算字节全长，用一下方式判断
+
+```javascript
+const str = 'a中文s'
+let charLength = 0;
+for (let i = 0, l = str.length; i < l; i++) {
+    const char = str.charAt(i);
+    if (/^[\u0000-\u00ff]$/.test(char)) {
+        charLength ++;
+    } else {
+        // escape(char).length > 4;
+        // str.charCodeAt(i) > 255;
+        charLength += 2;
+    }
+}
+```
+
